@@ -23,16 +23,11 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 ## Pemesanan pelanggan
 
-- Pelanggan membuka `/pesan` dari perangkat yang dapat menjangkau server, memilih produk, lalu mengirim order tanpa login.
-- Kasir membuka `/order-pelanggan` untuk menerima notifikasi order baru dan memeriksa antrean. Halaman memeriksa order baru setiap 8 detik.
-- Setelah kasir menerima order, pembayaran diselesaikan di halaman detail order. Stok dan laporan penjualan diperbarui setelah pembayaran berhasil.
-- Pelanggan dapat memantau status melalui tautan yang diberikan setelah mengirim order. Status diperbarui otomatis selama halaman tersebut terbuka.
-
-Jalankan migrasi database sebelum menggunakan fitur:
-
-```bash
-php artisan migrate
-```
+- Pelanggan membuka `/pesan` dari perangkat yang dapat menjangkau server dan mengirim pilihan produk tanpa login.
+- Order disimpan sebagai `Pending` di `tr_pesanan`, dengan item di `tr_detail_pesanan`. Tautan bertanda tangan digunakan untuk memantau status selama 24 jam.
+- Kasir membuka `/order-pelanggan` untuk melihat order baru; halaman memeriksa order setiap 8 detik.
+- Kasir menyelesaikan pembayaran untuk mengubah order yang sama menjadi `Selesai`, atau membatalkannya menjadi `Batal`. Stok hanya berkurang setelah pembayaran berhasil.
+- Fitur ini menggunakan tabel pada skema yang tersedia dan tidak menyimpan nama atau nomor telepon pelanggan karena kolom tersebut tidak ada di database.
 
 Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang sama dan dapat dijangkau di jaringan. `127.0.0.1` hanya menunjuk ke perangkat yang sedang digunakan.
 

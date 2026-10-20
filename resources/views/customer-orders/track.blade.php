@@ -15,28 +15,26 @@
         </a>
     </header>
     <main class="products-main customer-order-main customer-order-track">
-        <section class="customer-order-status-card" data-customer-order-status data-status-url="{{ route('customer-orders.status', $order->tracking_token) }}">
-            <p class="products-eyebrow">PESANAN #{{ $order->id }}</p>
-            <h1>Terima kasih, {{ $order->nama_pelanggan }}!</h1>
-            <p>Pesananmu sudah dikirim ke kasir. Halaman ini memperbarui status secara otomatis.</p>
-            <div class="customer-order-status-pill" data-status-label>{{ $order->status }}</div>
+        <section class="customer-order-status-card" data-customer-order-status data-status-url="{{ $statusUrl }}">
+            <p class="products-eyebrow">PESANAN #{{ $customerOrder->id_pesanan }}</p>
+            <h1>Pesanan berhasil dikirim</h1>
+            <p>Kasir akan memeriksa pesananmu. Halaman ini memperbarui status secara otomatis.</p>
+            <div class="customer-order-status-pill" data-status-label>{{ $customerOrder->status }}</div>
             <p class="customer-order-status-message" data-status-message>
-                @if ($order->status === 'Menunggu')
+                @if ($customerOrder->status === 'Pending')
                     Menunggu konfirmasi dari kasir.
-                @elseif ($order->status === 'Diproses')
-                    Pesanan diterima. Silakan lakukan pembayaran kepada kasir.
-                @elseif ($order->status === 'Ditolak')
-                    Maaf, kasir belum dapat menerima pesanan ini. Silakan hubungi kasir.
-                @else
+                @elseif ($customerOrder->status === 'Batal')
+                    Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.
+                @elseif ($customerOrder->status === 'Selesai')
                     Pesanan selesai. Terima kasih sudah berbelanja!
                 @endif
             </p>
             <div class="customer-order-track-items">
                 @foreach ($items as $item)
-                    <div><span>{{ $item->nama_produk }} × {{ $item->jumlah }}</span><strong>Rp{{ number_format((int) $item->sub_total, 0, ',', '.') }}</strong></div>
+                    <div><span>{{ $item->nama_produk ?: 'Produk #'.$item->id_produk }} × {{ $item->jumlah }}</span><strong>Rp{{ number_format((int) $item->sub_total, 0, ',', '.') }}</strong></div>
                 @endforeach
             </div>
-            <div class="customer-order-total"><span>Total pesanan</span><strong>Rp{{ number_format((int) $order->total, 0, ',', '.') }}</strong></div>
+            <div class="customer-order-total"><span>Total pesanan</span><strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong></div>
             <a class="customer-order-new-link" href="{{ route('customer-orders.create') }}">Kembali ke menu</a>
         </section>
     </main>

@@ -20,8 +20,6 @@ class SalesTest extends TestCase
         Schema::dropIfExists('tr_pembayaran');
         Schema::dropIfExists('tr_detail_pesanan');
         Schema::dropIfExists('tr_pesanan');
-        Schema::dropIfExists('tr_customer_order_items');
-        Schema::dropIfExists('tr_customer_orders');
         Schema::dropIfExists('tr_stok');
         Schema::dropIfExists('ms_produk');
         Schema::dropIfExists('ms_kategori');
@@ -56,10 +54,11 @@ class SalesTest extends TestCase
 
         Schema::create('tr_pesanan', function ($table): void {
             $table->integer('id_pesanan')->primary();
-            $table->dateTime('tanggal');
-            $table->integer('total');
-            $table->string('status', 20);
-            $table->string('ms_user_id_user', 30);
+            $table->dateTime('tanggal')->nullable();
+            $table->integer('total')->nullable();
+            $table->enum('status', ['Selesai', 'Pending', 'Batal'])->nullable();
+            $table->string('ms_user_id_user', 30)->nullable();
+            $table->timestamps();
         });
 
         Schema::create('tr_detail_pesanan', function ($table): void {
@@ -91,27 +90,6 @@ class SalesTest extends TestCase
             $table->string('ms_produk_id_produk', 45);
         });
 
-        Schema::create('tr_customer_orders', function ($table): void {
-            $table->id();
-            $table->uuid('tracking_token')->unique();
-            $table->string('nama_pelanggan', 60);
-            $table->string('no_telepon', 20)->nullable();
-            $table->unsignedInteger('total');
-            $table->string('status', 20)->default('Menunggu');
-            $table->unsignedInteger('sale_id')->nullable();
-            $table->timestamps();
-        });
-
-        Schema::create('tr_customer_order_items', function ($table): void {
-            $table->id();
-            $table->unsignedBigInteger('customer_order_id');
-            $table->unsignedInteger('id_produk');
-            $table->string('nama_produk', 60);
-            $table->unsignedInteger('jumlah');
-            $table->unsignedInteger('harga');
-            $table->unsignedInteger('sub_total');
-            $table->timestamps();
-        });
     }
 
     public function test_guest_is_redirected_from_sales_module(): void
@@ -158,40 +136,42 @@ class SalesTest extends TestCase
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
-        $this->post('/pesan', [
-            'nama_pelanggan' => 'Dewi',
-            'no_telepon' => '08123456789',
+        $response = $this->post('/pesan', [
             'items' => [['id_produk' => 1, 'jumlah' => 2]],
         ])->assertRedirect();
 
-        $order = DB::table('tr_customer_orders')->first();
+        $order = DB::table('tr_pesanan')->where('status', 'Pending')->first();
         $this->assertNotNull($order);
-        $this->assertDatabaseHas('tr_customer_orders', [
-            'id' => $order->id,
-            'nama_pelanggan' => 'Dewi',
+        $this->assertDatabaseHas('tr_pesanan', [
+            'id_pesanan' => $order->id_pesanan,
             'total' => 30000,
-            'status' => 'Menunggu',
+            'status' => 'Pending',
+            'ms_user_id_user' => null,
         ]);
-        $this->assertDatabaseHas('tr_customer_order_items', [
-            'customer_order_id' => $order->id,
-            'nama_produk' => 'Mochi Stroberi',
+        $this->assertDatabaseHas('tr_detail_pesanan', [
+            'id_pesanan' => (string) $order->id_pesanan,
+            'id_produk' => '1',
             'jumlah' => 2,
             'harga' => 15000,
             'sub_total' => 30000,
         ]);
-        $this->assertDatabaseCount('tr_pesanan', 0);
         $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'stok' => 8]);
 
-        $this->get('/pesanan/'.$order->tracking_token)
+        $location = $response->headers->get('Location');
+        $this->assertStringContainsString('/pesanan/'.$order->id_pesanan.'?', $location);
+
+        $trackResponse = $this->get($location)
             ->assertOk()
-            ->assertSee('Dewi')
+            ->assertSee('PESANAN #'.$order->id_pesanan)
             ->assertSee('Menunggu konfirmasi dari kasir.')
             ->assertSee('Mochi Stroberi');
 
-        $this->getJson('/pesanan/'.$order->tracking_token.'/status')
+        preg_match('/data-status-url="([^"]+)"/', $trackResponse->getContent(), $matches);
+        $statusUrl = html_entity_decode($matches[1] ?? '');
+        $this->assertNotSame('', $statusUrl);
+        $this->getJson($statusUrl)
             ->assertOk()
-            ->assertJsonPath('status', 'Menunggu')
-            ->assertJsonPath('sale_id', null);
+            ->assertJsonPath('status', 'Pending');
     }
 
     public function test_customer_order_validation_rejects_unavailable_stock(): void
@@ -200,11 +180,10 @@ class SalesTest extends TestCase
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 1);
 
         $this->from('/pesan')->post('/pesan', [
-            'nama_pelanggan' => 'Dewi',
             'items' => [['id_produk' => 1, 'jumlah' => 2]],
         ])->assertRedirect('/pesan')->assertSessionHasErrors('items');
 
-        $this->assertDatabaseCount('tr_customer_orders', 0);
+        $this->assertDatabaseCount('tr_pesanan', 0);
     }
 
     public function test_cashier_can_accept_and_complete_customer_order_as_paid_sale(): void
@@ -213,78 +192,60 @@ class SalesTest extends TestCase
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
         $this->post('/pesan', [
-            'nama_pelanggan' => 'Dewi',
             'items' => [['id_produk' => 1, 'jumlah' => 2]],
         ]);
-        $order = DB::table('tr_customer_orders')->first();
+        $order = DB::table('tr_pesanan')->where('status', 'Pending')->first();
 
         $this->signIn('Kasir');
         $this->get('/order-pelanggan')
             ->assertOk()
-            ->assertSee('Dewi')
             ->assertSee('Mochi Stroberi')
-            ->assertSee('Menunggu');
+            ->assertSee('Order #'.$order->id_pesanan);
         $this->getJson('/order-pelanggan/notifikasi')
             ->assertOk()
             ->assertJsonPath('pending_count', 1)
-            ->assertJsonPath('latest_order_id', $order->id);
+            ->assertJsonPath('latest_order_id', $order->id_pesanan);
 
-        $this->put('/order-pelanggan/'.$order->id.'/status', ['status' => 'Diproses'])
-            ->assertRedirect('/order-pelanggan/'.$order->id);
-
-        $this->post('/order-pelanggan/'.$order->id.'/selesaikan', [
+        $this->post('/order-pelanggan/'.$order->id_pesanan.'/selesaikan', [
             'metode' => 'Tunai',
             'jumlah_bayar' => 30000,
-        ])->assertRedirect('/transaksi/1');
+        ])->assertRedirect('/transaksi/'.$order->id_pesanan);
 
-        $this->assertDatabaseHas('tr_customer_orders', [
-            'id' => $order->id,
-            'status' => 'Selesai',
-            'sale_id' => 1,
-        ]);
         $this->assertDatabaseHas('tr_pesanan', [
-            'id_pesanan' => 1,
-            'total' => 30000,
+            'id_pesanan' => $order->id_pesanan,
             'status' => 'Selesai',
+            'total' => 30000,
             'ms_user_id_user' => '1',
         ]);
         $this->assertDatabaseHas('tr_pembayaran', [
-            'id_pesanan' => '1',
+            'id_pesanan' => (string) $order->id_pesanan,
             'metode' => 'Tunai',
             'status_pembayaran' => 'Lunas',
         ]);
         $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'stok' => 6]);
-        $this->getJson('/pesanan/'.$order->tracking_token.'/status')
-            ->assertOk()
-            ->assertJsonPath('status', 'Selesai')
-            ->assertJsonPath('sale_id', 1);
     }
 
-    public function test_customer_order_that_loses_stock_can_be_rejected_after_acceptance(): void
+    public function test_customer_order_that_loses_stock_can_be_cancelled_before_payment(): void
     {
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 2);
 
-        $this->post('/pesan', [
-            'nama_pelanggan' => 'Dewi',
-            'items' => [['id_produk' => 1, 'jumlah' => 2]],
-        ]);
-        $order = DB::table('tr_customer_orders')->first();
+        $this->post('/pesan', ['items' => [['id_produk' => 1, 'jumlah' => 2]]]);
+        $order = DB::table('tr_pesanan')->where('status', 'Pending')->first();
         DB::table('ms_produk')->where('id_produk', 1)->update(['stok' => 1]);
 
         $this->signIn('Kasir');
-        $this->put('/order-pelanggan/'.$order->id.'/status', ['status' => 'Diproses']);
-        $this->from('/order-pelanggan/'.$order->id)->post('/order-pelanggan/'.$order->id.'/selesaikan', [
+        $this->from('/order-pelanggan/'.$order->id_pesanan)->post('/order-pelanggan/'.$order->id_pesanan.'/selesaikan', [
             'metode' => 'Tunai',
             'jumlah_bayar' => 30000,
-        ])->assertRedirect('/order-pelanggan/'.$order->id)
+        ])->assertRedirect('/order-pelanggan/'.$order->id_pesanan)
             ->assertSessionHasErrors('items');
 
-        $this->put('/order-pelanggan/'.$order->id.'/status', ['status' => 'Ditolak'])
-            ->assertRedirect('/order-pelanggan/'.$order->id);
+        $this->post('/order-pelanggan/'.$order->id_pesanan.'/batal')
+            ->assertRedirect('/order-pelanggan');
 
-        $this->assertDatabaseHas('tr_customer_orders', ['id' => $order->id, 'status' => 'Ditolak']);
-        $this->assertDatabaseCount('tr_pesanan', 0);
+        $this->assertDatabaseHas('tr_pesanan', ['id_pesanan' => $order->id_pesanan, 'status' => 'Batal']);
+        $this->assertDatabaseCount('tr_pembayaran', 0);
     }
 
     public function test_customer_can_only_submit_and_cannot_access_cashier_order_queue(): void

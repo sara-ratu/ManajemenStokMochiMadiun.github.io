@@ -40,48 +40,27 @@
                 @endif
                 <a class="customer-order-back-link" href="{{ route('customer-orders.cashier.index') }}">← Kembali ke antrean order</a>
                 <section class="customer-order-detail-card">
-                    <div class="customer-order-queue-heading">
-                        <div><span>Order #{{ $customerOrder->id }}</span><time>{{ \Illuminate\Support\Carbon::parse($customerOrder->created_at)->locale('id')->translatedFormat('d F Y, H.i') }}</time></div>
-                        <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($customerOrder->status) }}">{{ $customerOrder->status }}</span>
-                    </div>
-                    <dl class="customer-order-customer-info">
-                        <div><dt>Nama pelanggan</dt><dd>{{ $customerOrder->nama_pelanggan }}</dd></div>
-                        @if ($customerOrder->no_telepon)
-                            <div><dt>Nomor telepon</dt><dd>{{ $customerOrder->no_telepon }}</dd></div>
-                        @endif
-                    </dl>
-                    <div class="customer-order-track-items">
-                        @foreach ($items as $item)
-                            <div><span>{{ $item->nama_produk }} × {{ number_format((int) $item->jumlah, 0, ',', '.') }}</span><strong>Rp{{ number_format((int) $item->sub_total, 0, ',', '.') }}</strong></div>
-                        @endforeach
-                    </div>
-                    <div class="customer-order-total"><span>Total pesanan</span><strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong></div>
-
-                    @if ($customerOrder->status === 'Menunggu')
-                        <div class="customer-order-decision-actions">
-                            <form action="{{ route('customer-orders.cashier.status', $customerOrder->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="Ditolak">
-                                <button class="customer-order-reject-button" type="submit">Tolak pesanan</button>
-                            </form>
-                            <form action="{{ route('customer-orders.cashier.status', $customerOrder->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="Diproses">
-                                <button class="sales-checkout-button" type="submit">Terima pesanan</button>
-                            </form>
+                        <div class="customer-order-queue-heading">
+                            <div><span>Order #{{ $customerOrder->id_pesanan }}</span><time>{{ \Illuminate\Support\Carbon::parse($customerOrder->tanggal)->locale('id')->translatedFormat('d F Y, H.i') }}</time></div>
+                            <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($customerOrder->status) }}">{{ $customerOrder->status }}</span>
                         </div>
-                    @elseif ($customerOrder->status === 'Diproses')
-                        <form class="customer-order-reject-form" action="{{ route('customer-orders.cashier.status', $customerOrder->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="status" value="Ditolak">
-                            <button class="customer-order-reject-button" type="submit">Batalkan order ini</button>
-                        </form>
-                        <form class="customer-order-payment-form" action="{{ route('customer-orders.cashier.complete', $customerOrder->id) }}" method="POST">
-                            @csrf
-                            <h2>Selesaikan pesanan & pembayaran</h2>
+                        <div class="customer-order-track-items">
+                            @foreach ($items as $item)
+                                <div><span>{{ $item->nama_produk ?: 'Produk #'.$item->id_produk }} × {{ number_format((int) $item->jumlah, 0, ',', '.') }}</span><strong>Rp{{ number_format((int) $item->sub_total, 0, ',', '.') }}</strong></div>
+                            @endforeach
+                        </div>
+                        <div class="customer-order-total"><span>Total pesanan</span><strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong></div>
+
+                        @if ($customerOrder->status === 'Pending')
+                            <div class="customer-order-decision-actions">
+                                <form action="{{ route('customer-orders.cashier.reject', $customerOrder->id_pesanan) }}" method="POST">
+                                    @csrf
+                                    <button class="customer-order-reject-button" type="submit">Tolak pesanan</button>
+                                </form>
+                            </div>
+                            <form class="customer-order-payment-form" action="{{ route('customer-orders.cashier.complete', $customerOrder->id_pesanan) }}" method="POST">
+                                @csrf
+                                <h2>Proses pembayaran</h2>
                             <label for="order-payment-method">Metode pembayaran</label>
                             <select id="order-payment-method" name="metode" required>
                                 <option value="Tunai">Tunai</option>
@@ -90,11 +69,11 @@
                             </select>
                             <label for="order-amount-paid">Jumlah dibayar (Rp)</label>
                             <input id="order-amount-paid" name="jumlah_bayar" type="number" min="{{ $customerOrder->total }}" max="2147483647" step="1" value="{{ $customerOrder->total }}" required>
-                            <button class="sales-checkout-button" type="submit">Tandai lunas & kurangi stok</button>
+                            <button class="sales-checkout-button" type="submit">Selesaikan transaksi</button>
                             <p class="sales-checkout-hint">Stok berkurang dan penjualan tercatat setelah pembayaran berhasil.</p>
                         </form>
-                    @elseif ($customerOrder->status === 'Selesai' && $customerOrder->sale_id)
-                        <a class="sales-detail-link sales-history-action" href="{{ route('sales.show', $customerOrder->sale_id) }}">Lihat struk transaksi →</a>
+                    @elseif ($customerOrder->status === 'Selesai')
+                        <a class="sales-detail-link sales-history-action" href="{{ route('sales.show', $customerOrder->id_pesanan) }}">Lihat struk transaksi →</a>
                     @endif
                 </section>
             </main>

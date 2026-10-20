@@ -15,11 +15,13 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 Route::get('/pesan', [CustomerOrderController::class, 'create'])->name('customer-orders.create');
 Route::post('/pesan', [CustomerOrderController::class, 'store'])->name('customer-orders.store');
-Route::get('/pesanan/{token}', [CustomerOrderController::class, 'track'])
-    ->whereUuid('token')
+Route::get('/pesanan/{order}', [CustomerOrderController::class, 'track'])
+    ->whereNumber('order')
+    ->middleware('signed')
     ->name('customer-orders.track');
-Route::get('/pesanan/{token}/status', [CustomerOrderController::class, 'trackStatus'])
-    ->whereUuid('token')
+Route::get('/pesanan/{order}/status', [CustomerOrderController::class, 'trackStatus'])
+    ->whereNumber('order')
+    ->middleware('signed')
     ->name('customer-orders.status');
 
 Route::middleware('auth')->group(function () {
@@ -53,9 +55,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/order-pelanggan/{order}', [CustomerOrderController::class, 'cashierShow'])
             ->whereNumber('order')
             ->name('customer-orders.cashier.show');
-        Route::put('/order-pelanggan/{order}/status', [CustomerOrderController::class, 'updateStatus'])
+        Route::post('/order-pelanggan/{order}/batal', [CustomerOrderController::class, 'reject'])
             ->whereNumber('order')
-            ->name('customer-orders.cashier.status');
+            ->name('customer-orders.cashier.reject');
         Route::post('/order-pelanggan/{order}/selesaikan', [CustomerOrderController::class, 'complete'])
             ->whereNumber('order')
             ->name('customer-orders.cashier.complete');

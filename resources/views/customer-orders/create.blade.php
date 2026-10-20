@@ -19,7 +19,7 @@
             <div>
                 <p class="products-eyebrow">PESAN ONLINE</p>
                 <h1>Pilih Mochi Favoritmu</h1>
-                <p class="products-subtitle">Kirim pesanan ke kasir. Pembayaran dilakukan setelah pesanan dikonfirmasi.</p>
+                <p class="products-subtitle">Kirim pesanan ke kasir. Pembayaran dilakukan langsung kepada kasir setelah pesanan diperiksa.</p>
             </div>
         </section>
 
@@ -75,15 +75,9 @@
 
             <section class="customer-order-submit-card">
                 <div class="customer-order-total"><span>Perkiraan total</span><strong data-customer-order-total>Rp0</strong></div>
-                <div class="customer-order-customer-fields">
-                    <label for="customer-order-name">Nama pemesan</label>
-                    <input id="customer-order-name" name="nama_pelanggan" type="text" maxlength="60" value="{{ old('nama_pelanggan') }}" autocomplete="name" required>
-                    <label for="customer-order-phone">Nomor telepon <span>(opsional)</span></label>
-                    <input id="customer-order-phone" name="no_telepon" type="tel" maxlength="20" value="{{ old('no_telepon') }}" autocomplete="tel">
-                </div>
                 <div data-customer-order-items></div>
                 <button class="sales-checkout-button" type="submit" data-customer-order-submit disabled>Kirim Pesanan ke Kasir</button>
-                <p class="sales-checkout-hint">Stok belum dipotong. Kasir akan mengonfirmasi ketersediaan dan pembayaran.</p>
+                <p class="sales-checkout-hint">Stok belum dipotong. Simpan tautan nomor pesanan untuk memantau statusnya.</p>
             </section>
         </form>
     </main>

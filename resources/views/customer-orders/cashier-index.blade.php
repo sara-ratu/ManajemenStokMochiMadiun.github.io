@@ -17,7 +17,7 @@
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}"><span>Transaksi</span></a>
-                <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('customer-orders.cashier.index') }}" aria-current="page"><span>Order Pelanggan</span><span class="customer-order-nav-count" data-pending-count>{{ $orders->where('status', 'Menunggu')->count() }}</span></a>
+                <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('customer-orders.cashier.index') }}" aria-current="page"><span>Order Pelanggan</span><span class="customer-order-nav-count" data-pending-count>{{ $orders->count() }}</span></a>
                 <a class="sidebar-nav-link" href="{{ route('stocks.index') }}"><span>Kelola Stok</span></a>
                 <a class="sidebar-nav-link" href="{{ route('profile.show') }}"><span>Profil</span></a>
             </nav>
@@ -44,7 +44,7 @@
                         <h1>Order dari Pelanggan</h1>
                         <p class="products-subtitle">Pesanan baru diperiksa di sini. Halaman memeriksa order baru setiap 8 detik.</p>
                     </div>
-                    <span class="customer-order-pending-summary"><strong data-pending-count>{{ $orders->where('status', 'Menunggu')->count() }}</strong> menunggu</span>
+                    <span class="customer-order-pending-summary"><strong data-pending-count>{{ $orders->count() }}</strong> menunggu</span>
                 </section>
                 <div class="customer-order-new-alert" role="status" data-new-order-alert hidden>
                     Ada order pelanggan baru. <button type="button" data-refresh-order-queue>Muat ulang antrean</button>
@@ -53,14 +53,14 @@
                     @forelse ($orders as $order)
                         <article class="customer-order-queue-card">
                             <div class="customer-order-queue-heading">
-                                <div><span>Order #{{ $order->id }}</span><time>{{ \Illuminate\Support\Carbon::parse($order->created_at)->locale('id')->translatedFormat('d M Y, H.i') }}</time></div>
-                                <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($order->status) }}">{{ $order->status }}</span>
+                                <div><span>Order #{{ $order->id_pesanan }}</span><time>{{ \Illuminate\Support\Carbon::parse($order->tanggal)->locale('id')->translatedFormat('d M Y, H.i') }}</time></div>
+                                <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($order->status) }}">Menunggu</span>
                             </div>
-                            <p class="customer-order-queue-customer">{{ $order->nama_pelanggan }} @if ($order->no_telepon)<span>· {{ $order->no_telepon }}</span>@endif</p>
-                            <p class="customer-order-queue-items">{{ $order->items->map(fn ($item) => $item->nama_produk.' × '.$item->jumlah)->join(', ') }}</p>
+                            <p class="customer-order-queue-customer">Pelanggan <span>· Order online</span></p>
+                            <p class="customer-order-queue-items">{{ $order->items->map(fn ($item) => ($item->nama_produk ?: 'Produk #'.$item->id_produk).' × '.$item->jumlah)->join(', ') }}</p>
                             <div class="customer-order-queue-bottom">
                                 <strong>Rp{{ number_format((int) $order->total, 0, ',', '.') }}</strong>
-                                <a class="sales-detail-link sales-history-action" href="{{ route('customer-orders.cashier.show', $order->id) }}">Periksa order <span aria-hidden="true">→</span></a>
+                                <a class="sales-detail-link sales-history-action" href="{{ route('customer-orders.cashier.show', $order->id_pesanan) }}">Periksa order <span aria-hidden="true">→</span></a>
                             </div>
                         </article>
                     @empty
