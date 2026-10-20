@@ -31,6 +31,7 @@ class SalesController extends Controller
             ->get();
 
         $sales = DB::table('tr_pesanan as sale')
+            ->where('sale.status', 'Selesai')
             ->leftJoin('ms_user as user', 'user.id_user', '=', 'sale.ms_user_id_user')
             ->select([
                 'sale.id_pesanan',
@@ -50,7 +51,7 @@ class SalesController extends Controller
             'sales' => $sales,
             'search' => $filters['q'] ?? '',
             'productCount' => Product::query()->count(),
-            'salesCount' => DB::table('tr_pesanan')->count(),
+            'salesCount' => DB::table('tr_pesanan')->where('status', 'Selesai')->count(),
             'salesTotal' => (int) DB::table('tr_pesanan')->where('status', 'Selesai')->sum('total'),
         ]);
     }
@@ -91,6 +92,7 @@ class SalesController extends Controller
         $order = DB::table('tr_pesanan as sale')
             ->leftJoin('ms_user as user', 'user.id_user', '=', 'sale.ms_user_id_user')
             ->where('sale.id_pesanan', $sale)
+            ->where('sale.status', 'Selesai')
             ->select([
                 'sale.id_pesanan',
                 'sale.tanggal',

@@ -7,8 +7,9 @@ use App\Services\SaleProcessor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -28,19 +29,15 @@ class CustomerOrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'nama_pelanggan' => ['required', 'string', 'max:60'],
-            'no_telepon' => ['nullable', 'string', 'max:20'],
             'items' => ['required', 'array', 'min:1', 'max:50'],
             'items.*.id_produk' => ['required', 'integer', 'distinct'],
             'items.*.jumlah' => ['required', 'integer', 'min:1', 'max:100'],
         ], [
-            'nama_pelanggan.required' => 'Nama pemesan wajib diisi.',
             'items.required' => 'Pilih setidaknya satu produk.',
             'items.min' => 'Pilih setidaknya satu produk.',
         ]);
 
-        $token = (string) Str::uuid();
-        DB::transaction(function () use ($data, $token): int {
+        $orderId = DB::transaction(function () use ($data): int {
             $itemIds = collect($data['items'])
                 ->pluck('id_produk')
                 ->map(fn ($id): int => (int) $id)
@@ -95,85 +92,104 @@ class CustomerOrderController extends Controller
                 ];
             }
 
+            $orderId = (int) DB::table('tr_pesanan')->lockForUpdate()->max('id_pesanan') + 1;
+            if ($orderId > 2147483647) {
+                throw new \RuntimeException('Nomor pesanan telah mencapai batas maksimum database.');
+            }
+
             $now = now('Asia/Jakarta');
-            $orderId = DB::table('tr_customer_orders')->insertGetId([
-                'tracking_token' => $token,
-                'nama_pelanggan' => $data['nama_pelanggan'],
-                'no_telepon' => $data['no_telepon'] ?? null,
+            DB::table('tr_pesanan')->insert([
+                'id_pesanan' => $orderId,
+                'tanggal' => $now->toDateTimeString(),
                 'total' => $total,
-                'status' => 'Menunggu',
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'Pending',
+                'ms_user_id_user' => null,
             ]);
+
+            $detailId = (int) DB::table('tr_detail_pesanan')->lockForUpdate()->max('id_detail') + 1;
+            if ($detailId > 2147483647 - count($lines) + 1) {
+                throw new \RuntimeException('Nomor detail pesanan telah mencapai batas maksimum database.');
+            }
 
             foreach ($lines as $line) {
                 /** @var Product $product */
                 $product = $line['product'];
-                DB::table('tr_customer_order_items')->insert([
-                    'customer_order_id' => $orderId,
-                    'id_produk' => $product->id_produk,
-                    'nama_produk' => $product->nama_produk ?: 'Produk tanpa nama',
+                DB::table('tr_detail_pesanan')->insert([
+                    'id_detail' => $detailId++,
+                    'id_pesanan' => (string) $orderId,
+                    'id_produk' => (string) $product->id_produk,
                     'jumlah' => $line['quantity'],
                     'harga' => $line['price'],
                     'sub_total' => $line['sub_total'],
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ]);
             }
 
             return $orderId;
         });
 
-        return redirect()->route('customer-orders.track', $token)
-            ->with('status', 'Pesanan berhasil dikirim ke kasir.');
+        $expiresAt = now()->addHours(24);
+
+        return redirect()->away(URL::temporarySignedRoute(
+            'customer-orders.track',
+            $expiresAt,
+            ['order' => $orderId],
+        ));
     }
 
-    public function track(string $token): View
+    public function track(int $order): View
     {
-        $order = DB::table('tr_customer_orders')
-            ->where('tracking_token', $token)
-            ->first();
-        abort_if($order === null, 404);
+        $customerOrder = DB::table('tr_pesanan')->where('id_pesanan', $order)->first();
+        abort_if($customerOrder === null, 404);
 
-        $items = DB::table('tr_customer_order_items')
-            ->where('customer_order_id', $order->id)
-            ->orderBy('id')
-            ->get();
+        $items = $this->orderItems($order);
+        $statusUrl = URL::temporarySignedRoute(
+            'customer-orders.status',
+            now()->addHours(24),
+            ['order' => $order],
+        );
 
-        return view('customer-orders.track', compact('order', 'items'));
+        return view('customer-orders.track', compact('customerOrder', 'items', 'statusUrl'));
     }
 
-    public function trackStatus(string $token): JsonResponse
+    public function trackStatus(int $order): JsonResponse
     {
-        $order = DB::table('tr_customer_orders')
-            ->where('tracking_token', $token)
-            ->first(['status', 'sale_id']);
-        abort_if($order === null, 404);
+        $customerOrder = DB::table('tr_pesanan')
+            ->where('id_pesanan', $order)
+            ->first(['status']);
+        abort_if($customerOrder === null, 404);
 
-        return response()->json([
-            'status' => $order->status,
-            'sale_id' => $order->sale_id,
-        ])->header('Cache-Control', 'no-store, private');
+        return response()->json(['status' => $customerOrder->status])
+            ->header('Cache-Control', 'no-store, private');
     }
 
     public function cashierIndex(): View
     {
-        $orders = DB::table('tr_customer_orders')
-            ->whereIn('status', ['Menunggu', 'Diproses'])
-            ->orderByRaw("CASE WHEN status = 'Menunggu' THEN 0 ELSE 1 END")
-            ->orderBy('created_at')
+        $orders = DB::table('tr_pesanan')
+            ->where('status', 'Pending')
+            ->orderBy('tanggal')
+            ->orderBy('id_pesanan')
             ->get();
 
-        $itemsByOrder = DB::table('tr_customer_order_items')
-            ->whereIn('customer_order_id', $orders->pluck('id'))
-            ->orderBy('id')
+        $itemsByOrder = DB::table('tr_detail_pesanan as detail')
+            ->leftJoin('ms_produk as product', 'product.id_produk', '=', 'detail.id_produk')
+            ->whereIn('detail.id_pesanan', $orders->pluck('id_pesanan')->map(fn ($id): string => (string) $id))
+            ->select([
+                'detail.id_pesanan',
+                'detail.id_produk',
+                'detail.jumlah',
+                'detail.harga',
+                'detail.sub_total',
+                'product.nama_produk',
+            ])
+            ->orderBy('detail.id_detail')
             ->get()
-            ->groupBy('customer_order_id');
+            ->groupBy('id_pesanan');
+
         foreach ($orders as $order) {
-            $order->items = $itemsByOrder->get($order->id, collect());
+            $order->items = $itemsByOrder->get((string) $order->id_pesanan, collect());
         }
 
-        $latestOrderId = (int) DB::table('tr_customer_orders')->max('id');
+        $latestOrderId = (int) DB::table('tr_pesanan')->where('status', 'Pending')->max('id_pesanan');
 
         return view('customer-orders.cashier-index', compact('orders', 'latestOrderId'));
     }
@@ -181,47 +197,33 @@ class CustomerOrderController extends Controller
     public function notifications(): JsonResponse
     {
         return response()->json([
-            'pending_count' => DB::table('tr_customer_orders')->where('status', 'Menunggu')->count(),
-            'latest_order_id' => (int) DB::table('tr_customer_orders')->max('id'),
+            'pending_count' => DB::table('tr_pesanan')->where('status', 'Pending')->count(),
+            'latest_order_id' => (int) DB::table('tr_pesanan')->where('status', 'Pending')->max('id_pesanan'),
         ])->header('Cache-Control', 'no-store, private');
     }
 
-    public function updateStatus(Request $request, int $order): RedirectResponse
+    public function reject(int $order): RedirectResponse
     {
-        $data = $request->validate([
-            'status' => ['required', 'in:Diproses,Ditolak'],
-        ]);
-
-        $allowedCurrentStatuses = $data['status'] === 'Ditolak'
-            ? ['Menunggu', 'Diproses']
-            : ['Menunggu'];
-        $updated = DB::table('tr_customer_orders')
-            ->where('id', $order)
-            ->whereIn('status', $allowedCurrentStatuses)
-            ->update([
-                'status' => $data['status'],
-                'updated_at' => now('Asia/Jakarta'),
-            ]);
+        $updated = DB::table('tr_pesanan')
+            ->where('id_pesanan', $order)
+            ->where('status', 'Pending')
+            ->update(['status' => 'Batal']);
 
         if ($updated === 0) {
-            abort_unless(DB::table('tr_customer_orders')->where('id', $order)->exists(), 404);
+            abort_unless(DB::table('tr_pesanan')->where('id_pesanan', $order)->exists(), 404);
 
             return back()->with('error', 'Pesanan sudah ditangani atau statusnya telah berubah.');
         }
 
-        return redirect()->route('customer-orders.cashier.show', $order)
-            ->with('status', $data['status'] === 'Diproses' ? 'Pesanan diterima.' : 'Pesanan ditolak.');
+        return redirect()->route('customer-orders.cashier.index')->with('status', 'Pesanan dibatalkan.');
     }
 
     public function cashierShow(int $order): View
     {
-        $customerOrder = DB::table('tr_customer_orders')->where('id', $order)->first();
+        $customerOrder = DB::table('tr_pesanan')->where('id_pesanan', $order)->first();
         abort_if($customerOrder === null, 404);
 
-        $items = DB::table('tr_customer_order_items')
-            ->where('customer_order_id', $order)
-            ->orderBy('id')
-            ->get();
+        $items = $this->orderItems($order);
 
         return view('customer-orders.cashier-show', compact('customerOrder', 'items'));
     }
@@ -233,39 +235,31 @@ class CustomerOrderController extends Controller
             'jumlah_bayar' => ['required', 'integer', 'min:0', 'max:2147483647'],
         ]);
 
-        $saleId = DB::transaction(function () use ($data, $order, $request, $saleProcessor): int {
-            $customerOrder = DB::table('tr_customer_orders')->where('id', $order)->lockForUpdate()->first();
-            abort_if($customerOrder === null, 404);
-            abort_unless($customerOrder->status === 'Diproses', 409, 'Pesanan harus diterima sebelum diproses.');
-
-            $items = DB::table('tr_customer_order_items')
-                ->where('customer_order_id', $order)
-                ->orderBy('id')
-                ->get()
-                ->map(fn ($item): array => [
-                    'id_produk' => $item->id_produk,
-                    'jumlah' => $item->jumlah,
-                    'harga' => $item->harga,
-                ])
-                ->all();
-
-            $saleId = $saleProcessor->complete(
-                $items,
-                $data['metode'],
-                (int) $data['jumlah_bayar'],
-                $request->user()->getAuthIdentifier(),
-            );
-
-            DB::table('tr_customer_orders')->where('id', $order)->update([
-                'status' => 'Selesai',
-                'sale_id' => $saleId,
-                'updated_at' => now('Asia/Jakarta'),
-            ]);
-
-            return $saleId;
-        });
+        $saleId = $saleProcessor->completePendingOrder(
+            $order,
+            $data['metode'],
+            (int) $data['jumlah_bayar'],
+            $request->user()->getAuthIdentifier(),
+        );
 
         return redirect()->route('sales.show', $saleId)
             ->with('status', 'Pesanan pelanggan selesai diproses.');
+    }
+
+    private function orderItems(int $order): Collection
+    {
+        return DB::table('tr_detail_pesanan as detail')
+            ->leftJoin('ms_produk as product', 'product.id_produk', '=', 'detail.id_produk')
+            ->where('detail.id_pesanan', (string) $order)
+            ->select([
+                'detail.id_detail',
+                'detail.id_produk',
+                'detail.jumlah',
+                'detail.harga',
+                'detail.sub_total',
+                'product.nama_produk',
+            ])
+            ->orderBy('detail.id_detail')
+            ->get();
     }
 }

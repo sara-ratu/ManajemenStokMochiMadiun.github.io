@@ -12,9 +12,15 @@ class SaleProcessor
     /**
      * @param  array<int, array{id_produk: int|string, jumlah: int|string, harga?: int|string}>  $items
      */
-    public function complete(array $items, string $method, int $amountPaid, int|string $cashierId): int
-    {
-        return DB::transaction(function () use ($items, $method, $amountPaid, $cashierId): int {
+    public function complete(
+        array $items,
+        string $method,
+        int $amountPaid,
+        int|string $cashierId,
+        ?int $existingSaleId = null,
+        ?int $expectedTotal = null,
+    ): int {
+        return DB::transaction(function () use ($items, $method, $amountPaid, $cashierId, $existingSaleId, $expectedTotal): int {
             $itemIds = collect($items)
                 ->pluck('id_produk')
                 ->map(fn ($id): int => (int) $id)
@@ -69,44 +75,67 @@ class SaleProcessor
                 ];
             }
 
+            if ($expectedTotal !== null && $total !== $expectedTotal) {
+                throw ValidationException::withMessages([
+                    'items' => 'Total pesanan tidak sesuai dengan detail produk.',
+                ]);
+            }
+
             if ($amountPaid < $total) {
                 throw ValidationException::withMessages([
                     'jumlah_bayar' => 'Pembayaran kurang dari total belanja.',
                 ]);
             }
 
-            $saleId = (int) DB::table('tr_pesanan')->lockForUpdate()->max('id_pesanan') + 1;
+            $saleId = $existingSaleId ?? ((int) DB::table('tr_pesanan')->lockForUpdate()->max('id_pesanan') + 1);
             $paymentId = (int) DB::table('tr_pembayaran')->lockForUpdate()->max('id_pembayaran') + 1;
-            $detailId = (int) DB::table('tr_detail_pesanan')->lockForUpdate()->max('id_detail') + 1;
-            if (
-                max($saleId, $paymentId, $detailId) > 2147483647
-                || $detailId > 2147483647 - count($lines) + 1
-            ) {
+            if ($existingSaleId === null) {
+                $detailId = (int) DB::table('tr_detail_pesanan')->lockForUpdate()->max('id_detail') + 1;
+            }
+            if ($saleId > 2147483647 || $paymentId > 2147483647
+                || ($existingSaleId === null && $detailId > 2147483647 - count($lines) + 1)) {
                 throw new RuntimeException('Nomor transaksi telah mencapai batas maksimum database.');
             }
 
             $now = now('Asia/Jakarta');
-            DB::table('tr_pesanan')->insert([
-                'id_pesanan' => $saleId,
-                'tanggal' => $now->toDateTimeString(),
-                'total' => $total,
-                'status' => 'Selesai',
-                'ms_user_id_user' => (string) $cashierId,
-            ]);
+            if ($existingSaleId === null) {
+                DB::table('tr_pesanan')->insert([
+                    'id_pesanan' => $saleId,
+                    'tanggal' => $now->toDateTimeString(),
+                    'total' => $total,
+                    'status' => 'Selesai',
+                    'ms_user_id_user' => (string) $cashierId,
+                ]);
+            } else {
+                $updated = DB::table('tr_pesanan')
+                    ->where('id_pesanan', $existingSaleId)
+                    ->where('status', 'Pending')
+                    ->update([
+                        'status' => 'Selesai',
+                        'ms_user_id_user' => (string) $cashierId,
+                    ]);
+                if ($updated !== 1) {
+                    throw ValidationException::withMessages([
+                        'order' => 'Pesanan sudah ditangani atau statusnya telah berubah.',
+                    ]);
+                }
+            }
 
             foreach ($lines as $line) {
                 /** @var Product $product */
                 $product = $line['product'];
                 $quantity = $line['quantity'];
 
-                DB::table('tr_detail_pesanan')->insert([
-                    'id_detail' => $detailId++,
-                    'id_pesanan' => (string) $saleId,
-                    'id_produk' => (string) $product->id_produk,
-                    'jumlah' => $quantity,
-                    'harga' => $line['price'],
-                    'sub_total' => $line['sub_total'],
-                ]);
+                if ($existingSaleId === null) {
+                    DB::table('tr_detail_pesanan')->insert([
+                        'id_detail' => $detailId++,
+                        'id_pesanan' => (string) $saleId,
+                        'id_produk' => (string) $product->id_produk,
+                        'jumlah' => $quantity,
+                        'harga' => $line['price'],
+                        'sub_total' => $line['sub_total'],
+                    ]);
+                }
 
                 $product->stok = (int) $product->stok - $quantity;
                 $product->save();
@@ -138,6 +167,42 @@ class SaleProcessor
             ]);
 
             return $saleId;
+        });
+    }
+
+    public function completePendingOrder(int $saleId, string $method, int $amountPaid, int|string $cashierId): int
+    {
+        return DB::transaction(function () use ($saleId, $method, $amountPaid, $cashierId): int {
+            $order = DB::table('tr_pesanan')
+                ->where('id_pesanan', $saleId)
+                ->lockForUpdate()
+                ->first();
+            if ($order === null) {
+                abort(404);
+            }
+            if ($order->status !== 'Pending') {
+                throw ValidationException::withMessages([
+                    'order' => 'Pesanan sudah ditangani atau statusnya telah berubah.',
+                ]);
+            }
+
+            $items = DB::table('tr_detail_pesanan')
+                ->where('id_pesanan', (string) $saleId)
+                ->orderBy('id_detail')
+                ->get()
+                ->map(fn ($item): array => [
+                    'id_produk' => $item->id_produk,
+                    'jumlah' => $item->jumlah,
+                    'harga' => $item->harga,
+                ])
+                ->all();
+            if ($items === []) {
+                throw ValidationException::withMessages([
+                    'order' => 'Pesanan tidak memiliki detail produk.',
+                ]);
+            }
+
+            return $this->complete($items, $method, $amountPaid, $cashierId, $saleId, (int) $order->total);
         });
     }
 }

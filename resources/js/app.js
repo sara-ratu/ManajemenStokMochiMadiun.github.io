@@ -401,9 +401,8 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
     const statusLabel = statusCard.querySelector('[data-status-label]');
     const statusMessage = statusCard.querySelector('[data-status-message]');
     const messages = {
-        Menunggu: 'Menunggu konfirmasi dari kasir.',
-        Diproses: 'Pesanan diterima. Silakan lakukan pembayaran kepada kasir.',
-        Ditolak: 'Maaf, kasir belum dapat menerima pesanan ini. Silakan hubungi kasir.',
+        Pending: 'Menunggu konfirmasi dari kasir.',
+        Batal: 'Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.',
         Selesai: 'Pesanan selesai. Terima kasih sudah berbelanja!',
     };
 
@@ -422,7 +421,7 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
 
-        if (['Ditolak', 'Selesai'].includes(order.status)) {
+        if (['Batal', 'Selesai'].includes(order.status)) {
             window.clearInterval(statusPoll);
         }
     };
@@ -431,7 +430,7 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         updateStatus().catch((error) => console.error(error));
     }, 8000);
 
-    if (['Ditolak', 'Selesai'].includes(statusLabel.textContent.trim())) {
+    if (['Batal', 'Selesai'].includes(statusLabel.textContent.trim())) {
         window.clearInterval(statusPoll);
     }
 });
