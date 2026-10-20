@@ -27,6 +27,7 @@ class LoginTest extends TestCase
             $table->string('alamat', 100)->nullable();
             $table->string('status', 12)->nullable();
             $table->string('role', 20)->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }
@@ -58,6 +59,18 @@ class LoginTest extends TestCase
             'username' => $user->email,
             'password' => 'secret-password',
         ])->assertRedirect('/produk');
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_cashier_can_login_with_email_and_password(): void
+    {
+        $user = $this->createActiveUser(['role' => 'Kasir']);
+
+        $this->post('/login', [
+            'username' => $user->email,
+            'password' => 'secret-password',
+        ])->assertRedirect('/transaksi');
 
         $this->assertAuthenticatedAs($user);
     }

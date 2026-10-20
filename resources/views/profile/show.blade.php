@@ -10,23 +10,33 @@
 <body class="products-page">
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
+            <a class="sidebar-brand" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}" aria-label="Mochi Madiun">
                 <span class="products-brand-mark" aria-hidden="true">M</span>
                 <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
-                <a class="sidebar-nav-link" href="{{ route('products.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
-                    <span>Produk</span>
-                </a>
-                <a class="sidebar-nav-link" href="{{ route('stocks.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
-                    <span>Kelola Stok</span>
-                </a>
+                @can('manage-products')
+                    <a class="sidebar-nav-link" href="{{ route('products.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
+                        <span>Produk</span>
+                    </a>
+                @endcan
+                @can('manage-stocks')
+                    <a class="sidebar-nav-link" href="{{ route('stocks.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
+                        <span>Kelola Stok</span>
+                    </a>
+                @endcan
+                @can('cashier')
+                    <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
+                        <span>Order Pelanggan</span>
+                    </a>
+                @endcan
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Transaksi</span>
+                    <span>{{ $isCashier ? 'Transaksi' : 'Laporan Penjualan' }}</span>
                 </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('profile.show') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
@@ -97,7 +107,7 @@
                     {{ $user->nama_lengkap ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap, 0, 1)) : '?' }}
                 </div>
                 <h2>{{ $user->nama_lengkap ?: 'Nama belum diisi' }}</h2>
-                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kaisr' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
+                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
                 <span class="profile-status {{ $user->status === 'Aktif' ? 'profile-status-active' : 'profile-status-inactive' }}">
                     <span aria-hidden="true"></span>
                     {{ $user->status === 'Aktif' ? 'Akun aktif' : ($user->status === 'TidakAktif' ? 'Akun tidak aktif' : 'Status belum diatur') }}
@@ -143,7 +153,7 @@
                     </div>
 
                     <div class="profile-readonly-info">
-                        <div><span>Role</span><strong>{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kaisr' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
+                        <div><span>Role</span><strong>{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
                         <div><span>Shift</span><strong>{{ $user->shift?->nama_shift ?: 'Belum ditentukan' }}</strong></div>
                         @if ($user->shift?->jam_mulai && $user->shift?->jam_selesai)
                             <div><span>Jam shift</span><strong>{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_mulai, 0, 5) }}–{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_selesai, 0, 5) }}</strong></div>

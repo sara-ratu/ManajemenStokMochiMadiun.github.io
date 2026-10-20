@@ -65,9 +65,9 @@ class StockTest extends TestCase
         $this->get('/stok')->assertRedirect('/login');
     }
 
-    public function test_authenticated_user_can_view_stock_history_and_current_stock_summary(): void
+    public function test_cashier_can_view_stock_history_and_current_stock_summary(): void
     {
-        $this->signIn();
+        $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 12);
         $this->createStockEntry(1, 1, 1, 'Mochi Admin');
@@ -86,9 +86,9 @@ class StockTest extends TestCase
             ->assertSee('Catat Stok Masuk');
     }
 
-    public function test_super_admin_can_record_incoming_stock_and_it_increases_product_stock(): void
+    public function test_cashier_can_record_incoming_stock_and_it_increases_product_stock(): void
     {
-        $this->signIn();
+        $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
@@ -118,7 +118,7 @@ class StockTest extends TestCase
 
     public function test_incoming_stock_can_initialize_product_with_null_stock(): void
     {
-        $this->signIn();
+        $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, null);
 
@@ -134,7 +134,7 @@ class StockTest extends TestCase
 
     public function test_stock_search_matches_product_and_note(): void
     {
-        $this->signIn();
+        $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
         $this->createProduct(2, 1, 'Mochi Cokelat', 18000, 4);
@@ -154,14 +154,13 @@ class StockTest extends TestCase
         $this->assertStringNotContainsString('<td class="stock-product-cell">Mochi Stroberi</td>', $response->getContent());
     }
 
-    public function test_cashier_can_view_stock_but_cannot_record_incoming_stock(): void
+    public function test_super_admin_cannot_access_cashier_stock_module(): void
     {
-        $this->signIn('Kaisr');
+        $this->signIn();
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
-        $this->get('/stok')->assertOk();
-
+        $this->get('/stok')->assertForbidden();
         $this->post('/stok', [
             'id_produk' => 1,
             'tanggal' => '2026-10-18',
@@ -173,7 +172,7 @@ class StockTest extends TestCase
 
     public function test_stock_cannot_exceed_database_integer_limit(): void
     {
-        $this->signIn();
+        $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 2147483647);
 
