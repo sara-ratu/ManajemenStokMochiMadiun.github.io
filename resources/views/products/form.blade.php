@@ -59,8 +59,9 @@
                 <div class="action-notice action-notice-error" role="alert">Periksa kembali data produk yang Anda masukkan.</div>
             @endif
 
-            <form class="product-edit-form" action="{{ $editing ? route('products.update', $product) : route('products.store') }}" method="POST" enctype="multipart/form-data" data-category-form>
+            <form class="product-edit-form" action="{{ $editing ? route('products.update', $product) : route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="form_type" value="product">
                 @if ($editing)
                     @method('PUT')
                     <input type="hidden" name="edit_product_id" value="{{ $product->id_produk }}">
@@ -79,20 +80,18 @@
                         @error('nama_produk')<span class="form-field-error">{{ $message }}</span>@enderror
                     </div>
                     <div class="product-form-field">
-                        @if ($editing)
-                            <label for="id_kategori">ID Kategori</label>
-                            <input id="id_kategori" name="id_kategori" type="number" value="{{ old('id_kategori', $product->id_kategori) }}" min="1" step="1" placeholder="Masukkan ID kategori" data-category-id-input>
-                        @endif
-                        <label for="kategori_cari">Nama kategori <span>(ketik nama, lalu pilih)</span></label>
-                        <input id="kategori_cari" name="kategori_cari" type="search" value="{{ old('kategori_cari', $product->category?->nama_kategori) }}" placeholder="Ketik nama kategori..." autocomplete="off" data-category-search>
-                        <select id="{{ $editing ? 'pilih_id_kategori' : 'id_kategori' }}" @if (! $editing) name="id_kategori" @endif data-category-select>
+                        <label for="id_kategori">Kategori</label>
+                        <select id="id_kategori" name="id_kategori">
                             <option value="">Pilih kategori</option>
                             @foreach ($categories as $category)
                                 <option value="{{ $category->id_kategori }}" @selected((string) old('id_kategori', $product->id_kategori) === (string) $category->id_kategori)>
-                                    {{ $category->nama_kategori ?: 'Tanpa nama' }}
+                                    {{ $category->nama_kategori }}
                                 </option>
                             @endforeach
                         </select>
+                        @if ($categories->isEmpty())
+                            <span class="category-id-selection">Belum ada kategori. Tambahkan kategori dari halaman daftar produk terlebih dahulu.</span>
+                        @endif
                         @error('id_kategori')<span class="form-field-error">{{ $message }}</span>@enderror
                     </div>
                     <div class="product-form-field">

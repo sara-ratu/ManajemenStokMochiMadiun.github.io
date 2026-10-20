@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
         Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
         Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
+        Route::post('/kategori', [ProductController::class, 'storeCategory'])->name('categories.store');
         Route::get('/produk/{product}/edit', [ProductController::class, 'edit'])->whereNumber('product')->name('products.edit');
         Route::put('/produk/{product}', [ProductController::class, 'update'])->whereNumber('product')->name('products.update');
         Route::delete('/produk/{product}', [ProductController::class, 'destroy'])->whereNumber('product')->name('products.destroy');
