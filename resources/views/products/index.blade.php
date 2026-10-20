@@ -69,10 +69,16 @@
                         <p class="products-subtitle">Kelola produk, kategori, harga, dan informasi stok.</p>
                     </div>
                     @can('manage-products')
-                        <button class="add-product-button" type="button" data-open-product-dialog="add-product-dialog">
-                            <span aria-hidden="true">+</span>
-                            Tambah Produk
-                        </button>
+                        <div class="catalog-heading-actions">
+                            <button class="add-category-button" type="button" data-open-product-dialog="add-category-dialog">
+                                <span aria-hidden="true">+</span>
+                                Tambah Kategori
+                            </button>
+                            <button class="add-product-button" type="button" data-open-product-dialog="add-product-dialog">
+                                <span aria-hidden="true">+</span>
+                                Tambah Produk
+                            </button>
+                        </div>
                     @endcan
                 </section>
 
@@ -226,10 +232,11 @@
             id="add-product-dialog"
             aria-labelledby="add-product-dialog-title"
             data-product-dialog
-            @if ($errors->any() && ! old('edit_product_id')) data-open-on-load @endif
+            @if ($errors->any() && old('form_type') !== 'category' && ! old('edit_product_id')) data-open-on-load @endif
         >
-            <form class="product-dialog-form" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" data-category-form>
+            <form class="product-dialog-form" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="form_type" value="product">
                 <h2 id="add-product-dialog-title">Tambah Produk</h2>
 
                 @if ($errors->any() && ! old('edit_product_id'))
@@ -253,36 +260,16 @@
                     </div>
 
                     <div class="dialog-form-field">
-                        <label for="dialog-id-kategori">ID Kategori <span>(pilih langsung atau cari nama kategori)</span></label>
-                        <input
-                            id="dialog-id-kategori"
-                            name="id_kategori"
-                            type="number"
-                            value="{{ old('id_kategori') }}"
-                            min="1"
-                            step="1"
-                            placeholder="Masukkan ID kategori"
-                            data-category-id-input
-                            @if ($errors->has('id_kategori')) aria-describedby="dialog-kategori-error" @endif
-                        >
-                        <label for="dialog-kategori-cari">Nama Kategori <span>(ketik nama, lalu pilih)</span></label>
-                        <input
-                            id="dialog-kategori-cari"
-                            name="kategori_cari"
-                            type="search"
-                            value="{{ old('kategori_cari') }}"
-                            placeholder="Ketik nama kategori..."
-                            autocomplete="off"
-                            data-category-search
-                        >
-                        <select id="dialog-kategori" data-category-select>
+                        <label for="dialog-kategori">Kategori</label>
+                        <select id="dialog-kategori" name="id_kategori" aria-describedby="dialog-kategori-help">
                             <option value="">Pilih kategori</option>
                             @foreach ($categories as $category)
                                 <option value="{{ $category->id_kategori }}" @selected((string) old('id_kategori') === (string) $category->id_kategori)>
-                                    {{ $category->nama_kategori ?: 'Tanpa nama' }}
+                                    {{ $category->nama_kategori }}
                                 </option>
                             @endforeach
                         </select>
+                        <span class="category-id-selection" id="dialog-kategori-help">Kategori belum ada? Tutup form ini, pilih <strong>Tambah Kategori</strong>, lalu kembali untuk memilihnya.</span>
                         @error('id_kategori')<span class="form-field-error" id="dialog-kategori-error">{{ $message }}</span>@enderror
                     </div>
 
@@ -328,6 +315,39 @@
             </form>
         </dialog>
 
+        <dialog
+            class="product-dialog"
+            id="add-category-dialog"
+            aria-labelledby="add-category-dialog-title"
+            data-product-dialog
+            @if ($errors->any() && old('form_type') === 'category') data-open-on-load @endif
+        >
+            <form class="product-dialog-form" action="{{ route('categories.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="form_type" value="category">
+                <h2 id="add-category-dialog-title">Tambah Kategori</h2>
+                <p class="category-dialog-description">Buat kategori baru agar bisa dipilih saat menambahkan atau mengubah produk.</p>
+                <div class="dialog-form-field">
+                    <label for="dialog-nama-kategori">Nama Kategori</label>
+                    <input
+                        id="dialog-nama-kategori"
+                        name="nama_kategori"
+                        type="text"
+                        value="{{ old('nama_kategori') }}"
+                        maxlength="30"
+                        placeholder="Contoh: Mochi Premium"
+                        required
+                        @if ($errors->has('nama_kategori')) aria-describedby="dialog-nama-kategori-error" @endif
+                    >
+                    @error('nama_kategori')<span class="form-field-error" id="dialog-nama-kategori-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="product-dialog-actions">
+                    <button class="dialog-cancel-button" type="button" data-close-product-dialog>Batal</button>
+                    <button class="dialog-submit-button" type="submit">Simpan Kategori</button>
+                </div>
+            </form>
+        </dialog>
+
         @foreach ($products as $product)
             <dialog
                 class="product-dialog product-dialog-wide"
@@ -336,10 +356,11 @@
                 data-product-dialog
                 @if ($errors->any() && (string) old('edit_product_id') === (string) $product->id_produk) data-open-on-load @endif
             >
-                <form class="product-dialog-form" action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" data-category-form>
+                <form class="product-dialog-form" action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="edit_product_id" value="{{ $product->id_produk }}">
+                    <input type="hidden" name="form_type" value="product">
                     <h2 id="edit-product-title-{{ $product->id_produk }}">Ubah Produk</h2>
 
                     @if ($errors->any() && (string) old('edit_product_id') === (string) $product->id_produk)
@@ -359,16 +380,11 @@
                             @endif
                         </div>
                         <div class="dialog-form-field">
-                            <label for="edit-id-kategori-{{ $product->id_produk }}">ID Kategori</label>
-                            <input id="edit-id-kategori-{{ $product->id_produk }}" name="id_kategori" type="number" value="{{ (string) old('edit_product_id') === (string) $product->id_produk ? old('id_kategori', $product->id_kategori) : $product->id_kategori }}" min="1" step="1" placeholder="Masukkan ID kategori" data-category-id-input>
-                        </div>
-                        <div class="dialog-form-field">
-                            <label for="edit-kategori-cari-{{ $product->id_produk }}">Nama Kategori</label>
-                            <input id="edit-kategori-cari-{{ $product->id_produk }}" name="kategori_cari" type="search" value="{{ (string) old('edit_product_id') === (string) $product->id_produk ? old('kategori_cari', $product->category?->nama_kategori) : $product->category?->nama_kategori }}" placeholder="Ketik nama kategori..." autocomplete="off" data-category-search>
-                            <select id="edit-kategori-{{ $product->id_produk }}" data-category-select>
+                            <label for="edit-kategori-{{ $product->id_produk }}">Kategori</label>
+                            <select id="edit-kategori-{{ $product->id_produk }}" name="id_kategori">
                                 <option value="">Pilih kategori</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id_kategori }}" @selected((string) ((string) old('edit_product_id') === (string) $product->id_produk ? old('id_kategori', $product->id_kategori) : $product->id_kategori) === (string) $category->id_kategori)>{{ $category->nama_kategori ?: 'Tanpa nama' }}</option>
+                                    <option value="{{ $category->id_kategori }}" @selected((string) ((string) old('edit_product_id') === (string) $product->id_produk ? old('id_kategori', $product->id_kategori) : $product->id_kategori) === (string) $category->id_kategori)>{{ $category->nama_kategori }}</option>
                                 @endforeach
                             </select>
                             @if ((string) old('edit_product_id') === (string) $product->id_produk)

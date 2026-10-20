@@ -2130,6 +2130,48 @@ body.login-page {
     margin-bottom: 0;
 }
 
+.catalog-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-category-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border: 1px solid #ed5b7b;
+    border-radius: 11px;
+    background: #fff;
+    color: #d94063;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.add-category-button:hover {
+    transform: translateY(-1px);
+    background: #fff3f6;
+}
+
+.add-category-button span {
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.category-dialog-description {
+    margin: -7px 5px 0;
+    color: #777;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .stock-summary {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3981,6 +4023,16 @@ body.login-page {
         justify-content: center;
     }
 
+    .stock-heading .catalog-heading-actions {
+        width: 100%;
+    }
+
+    .stock-heading .catalog-heading-actions > button {
+        flex: 1;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
     .stock-summary {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -4212,6 +4264,14 @@ body.login-page {
     }
 
     .add-product-button {
+        min-height: 40px;
+        gap: 5px;
+        padding: 0 10px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .add-category-button {
         min-height: 40px;
         gap: 5px;
         padding: 0 10px;
