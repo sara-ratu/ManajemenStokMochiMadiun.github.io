@@ -344,3 +344,128 @@ document.querySelectorAll('[data-product-dialog]').forEach((dialog) => {
         dialog.querySelector('.form-field-error')?.scrollIntoView({ block: 'nearest' });
     }
 });
+
+document.querySelectorAll('[data-customer-order-form]').forEach((form) => {
+    const itemInputs = form.querySelector('[data-customer-order-items]');
+    const totalOutput = form.querySelector('[data-customer-order-total]');
+    const submitButton = form.querySelector('[data-customer-order-submit]');
+    const quantities = Array.from(form.querySelectorAll('[data-customer-product-quantity]'));
+
+    if (!(itemInputs instanceof HTMLElement) || !(submitButton instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    const formatPrice = (amount) => `Rp${new Intl.NumberFormat('id-ID').format(amount)}`;
+    const renderOrder = () => {
+        itemInputs.replaceChildren();
+        let total = 0;
+        let itemCount = 0;
+
+        quantities.forEach((input) => {
+            if (!(input instanceof HTMLInputElement)) {
+                return;
+            }
+
+            const quantity = Number(input.value);
+            if (!Number.isInteger(quantity) || quantity <= 0) {
+                return;
+            }
+
+            itemCount += 1;
+            total += quantity * Number(input.dataset.productPrice);
+
+            const id = document.createElement('input');
+            id.type = 'hidden';
+            id.name = `items[${itemCount - 1}][id_produk]`;
+            id.value = input.dataset.productId;
+
+            const amount = document.createElement('input');
+            amount.type = 'hidden';
+            amount.name = `items[${itemCount - 1}][jumlah]`;
+            amount.value = String(quantity);
+            itemInputs.append(id, amount);
+        });
+
+        if (totalOutput) {
+            totalOutput.textContent = formatPrice(total);
+        }
+        submitButton.disabled = itemCount === 0;
+    };
+
+    quantities.forEach((input) => input.addEventListener('input', renderOrder));
+    renderOrder();
+});
+
+document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) => {
+    const statusUrl = statusCard.dataset.statusUrl;
+    const statusLabel = statusCard.querySelector('[data-status-label]');
+    const statusMessage = statusCard.querySelector('[data-status-message]');
+    const messages = {
+        Menunggu: 'Menunggu konfirmasi dari kasir.',
+        Diproses: 'Pesanan diterima. Silakan lakukan pembayaran kepada kasir.',
+        Ditolak: 'Maaf, kasir belum dapat menerima pesanan ini. Silakan hubungi kasir.',
+        Selesai: 'Pesanan selesai. Terima kasih sudah berbelanja!',
+    };
+
+    if (!statusUrl || !(statusLabel instanceof HTMLElement) || !(statusMessage instanceof HTMLElement)) {
+        return;
+    }
+
+    const updateStatus = async () => {
+        const response = await fetch(statusUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Pembaruan status pesanan gagal (${response.status}).`);
+        }
+
+        const order = await response.json();
+        statusLabel.textContent = order.status;
+        statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
+        statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
+
+        if (['Ditolak', 'Selesai'].includes(order.status)) {
+            window.clearInterval(statusPoll);
+        }
+    };
+
+    const statusPoll = window.setInterval(() => {
+        updateStatus().catch((error) => console.error(error));
+    }, 8000);
+
+    if (['Ditolak', 'Selesai'].includes(statusLabel.textContent.trim())) {
+        window.clearInterval(statusPoll);
+    }
+});
+
+document.querySelectorAll('[data-cashier-order-poll]').forEach((queue) => {
+    const notificationsUrl = queue.dataset.notificationsUrl;
+    const alert = queue.querySelector('[data-new-order-alert]');
+    const refreshButton = queue.querySelector('[data-refresh-order-queue]');
+    let latestOrderId = Number(queue.dataset.latestOrderId ?? 0);
+
+    if (!notificationsUrl || !(alert instanceof HTMLElement)) {
+        return;
+    }
+
+    refreshButton?.addEventListener('click', () => window.location.reload());
+
+    const pollOrders = async () => {
+        const response = await fetch(notificationsUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Pemeriksaan order baru gagal (${response.status}).`);
+        }
+
+        const result = await response.json();
+        queue.querySelectorAll('[data-pending-count]').forEach((count) => {
+            count.textContent = new Intl.NumberFormat('id-ID').format(result.pending_count);
+        });
+
+        if (result.latest_order_id > latestOrderId) {
+            latestOrderId = result.latest_order_id;
+            alert.hidden = false;
+        }
+    };
+
+    window.setInterval(() => {
+        pollOrders().catch((error) => console.error(error));
+    }, 8000);
+});

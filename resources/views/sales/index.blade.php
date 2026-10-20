@@ -9,32 +9,44 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
+        <a class="catalog-brand" href="{{ route(auth()->user()->can('manage-products') ? 'products.index' : 'sales.index') }}" aria-label="Mochi Madiun">
             <span>MOCHI MADIUN</span>
             @php($salesNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $salesNow->toIso8601String() }}">{{ $salesNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $salesNow->format('H.i') }}</time></small>
         </a>
-        <form class="catalog-search" method="GET" action="{{ route('sales.index') }}" role="search">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-            <input name="q" type="search" value="{{ $search }}" placeholder="Cari produk atau kategori..." maxlength="100" aria-label="Cari produk untuk transaksi">
-        </form>
+        @can('cashier')
+            <form class="catalog-search" method="GET" action="{{ route('sales.index') }}" role="search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+                <input name="q" type="search" value="{{ $search }}" placeholder="Cari produk atau kategori..." maxlength="100" aria-label="Cari produk untuk transaksi">
+            </form>
+        @endcan
     </header>
 
     <div class="products-app-shell">
         <aside class="app-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
-                <a class="sidebar-nav-link" href="{{ route('products.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
-                    <span>Produk</span>
-                </a>
-                <a class="sidebar-nav-link" href="{{ route('stocks.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
-                    <span>Kelola Stok</span>
-                </a>
+                @can('manage-products')
+                    <a class="sidebar-nav-link" href="{{ route('products.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
+                        <span>Produk</span>
+                    </a>
+                @endcan
+                @can('manage-stocks')
+                    <a class="sidebar-nav-link" href="{{ route('stocks.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
+                        <span>Kelola Stok</span>
+                    </a>
+                @endcan
+                @can('cashier')
+                    <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
+                        <span>Order Pelanggan</span>
+                    </a>
+                @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('sales.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Transaksi</span>
+                    <span>{{ auth()->user()->can('cashier') ? 'Transaksi' : 'Laporan Penjualan' }}</span>
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('profile.show') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
@@ -46,7 +58,7 @@
 
         <div class="products-workspace">
             <header class="products-topbar">
-                <div class="topbar-page-label">Transaksi Penjualan</div>
+                <div class="topbar-page-label">{{ auth()->user()->can('cashier') ? 'Transaksi Penjualan' : 'Laporan Penjualan' }}</div>
                 <div class="products-account">
                     <span class="account-greeting">Halo, <strong>{{ auth()->user()->nama_lengkap ?: 'Pengguna' }}</strong></span>
                     <form action="{{ route('logout') }}" method="POST">
@@ -66,8 +78,8 @@
 
                 <section class="products-heading stock-heading">
                     <div>
-                        <p class="products-eyebrow">KASIR</p>
-                        <p class="products-subtitle">Pilih produk untuk dimasukkan ke keranjang, lalu proses pembayaran.</p>
+                        <p class="products-eyebrow">{{ auth()->user()->can('cashier') ? 'KASIR' : 'LAPORAN PENJUALAN' }}</p>
+                        <p class="products-subtitle">{{ auth()->user()->can('cashier') ? 'Pilih produk untuk dimasukkan ke keranjang, lalu proses pembayaran.' : 'Pantau ringkasan dan riwayat transaksi penjualan.' }}</p>
                     </div>
                 </section>
 
@@ -92,7 +104,8 @@
                     </article>
                 </section>
 
-                <section class="sales-workspace" aria-label="Kasir dan keranjang">
+                @can('cashier')
+                    <section class="sales-workspace" aria-label="Kasir dan keranjang">
                     <div class="sales-products-panel">
                         <div class="stock-history-heading sales-panel-heading">
                             <div>
@@ -182,17 +195,19 @@
                         <p class="sales-checkout-hint">Stok akan diperbarui setelah pembayaran berhasil.</p>
                     </form>
                     </aside>
-                </section>
+                    </section>
+                @endcan
 
                 <section class="stock-history-card sales-history-card" aria-label="Riwayat transaksi penjualan">
                     <div class="stock-history-heading">
                         <div>
                             <h2>Riwayat Transaksi</h2>
-                            <p>Transaksi penjualan terakhir yang tercatat.</p>
+                            <p>Daftar transaksi penjualan yang tercatat.</p>
                         </div>
+                        <span class="sales-history-count">{{ number_format($sales->total(), 0, ',', '.') }} transaksi</span>
                     </div>
                     <div class="catalog-table-scroll">
-                        <table class="stock-table">
+                        <table class="stock-table sales-history-table">
                             <thead>
                                 <tr>
                                     <th scope="col">ID Pesanan</th>
@@ -206,15 +221,18 @@
                             <tbody>
                                 @forelse ($sales as $sale)
                                     <tr>
-                                        <td class="stock-id-cell">#{{ $sale->id_pesanan }}</td>
-                                        <td>{{ \Illuminate\Support\Carbon::parse($sale->tanggal)->locale('id')->translatedFormat('d M Y, H.i') }}</td>
-                                        <td>{{ $sale->nama_kasir ?: 'Pengguna #'.$sale->ms_user_id_user }}</td>
+                                        <td class="sales-history-id"><span>#{{ $sale->id_pesanan }}</span></td>
+                                        <td class="sales-history-date">
+                                            <strong>{{ \Illuminate\Support\Carbon::parse($sale->tanggal)->locale('id')->translatedFormat('d M Y') }}</strong>
+                                            <span>{{ \Illuminate\Support\Carbon::parse($sale->tanggal)->format('H.i') }} WIB</span>
+                                        </td>
+                                        <td class="sales-history-cashier">{{ $sale->nama_kasir ?: 'Pengguna #'.$sale->ms_user_id_user }}</td>
                                         <td class="sales-history-total">Rp{{ number_format((int) $sale->total, 0, ',', '.') }}</td>
                                         <td><span class="sale-status-badge">{{ $sale->status }}</span></td>
-                                        <td><a class="sales-detail-link" href="{{ route('sales.show', $sale->id_pesanan) }}">Lihat struk</a></td>
+                                        <td><a class="sales-detail-link sales-history-action" href="{{ route('sales.show', $sale->id_pesanan) }}">Lihat struk <span aria-hidden="true">→</span></a></td>
                                     </tr>
                                 @empty
-                                    <tr><td class="stock-empty-cell" colspan="6"><span aria-hidden="true">🧾</span><strong>Belum ada transaksi</strong><span>Transaksi yang berhasil diproses akan tampil di sini.</span></td></tr>
+                                    <tr><td class="stock-empty-cell sales-history-empty" colspan="6"><span aria-hidden="true">🧾</span><strong>Belum ada transaksi</strong><span>Transaksi yang berhasil diproses akan tampil di sini.</span></td></tr>
                                 @endforelse
                             </tbody>
                         </table>

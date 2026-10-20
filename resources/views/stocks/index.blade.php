@@ -9,7 +9,7 @@
 </head>
 <body class="products-page catalog-page stock-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
+        <a class="catalog-brand" href="{{ route('stocks.index') }}" aria-label="Mochi Madiun">
             <span>MOCHI MADIUN</span>
             @php($stockNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $stockNow->toIso8601String() }}">{{ $stockNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $stockNow->format('H.i') }}</time></small>
@@ -24,13 +24,13 @@
         <aside class="app-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
-                <a class="sidebar-nav-link" href="{{ route('products.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
-                    <span>Produk</span>
-                </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('stocks.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
                     <span>Kelola Stok</span>
+                </a>
+                <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
+                    <span>Order Pelanggan</span>
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>

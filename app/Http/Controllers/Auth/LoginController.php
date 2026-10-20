@@ -58,7 +58,7 @@ class LoginController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('products.index');
+        return redirect()->route($user->role === 'Kasir' ? 'sales.index' : 'products.index');
     }
 
     public function destroy(Request $request): RedirectResponse

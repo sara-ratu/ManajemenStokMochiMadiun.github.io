@@ -12,7 +12,7 @@ class ProfileController extends Controller
     public function show(Request $request): View
     {
         $user = $request->user()->load('shift');
-        $isCashier = $user->role === 'Kaisr';
+        $isCashier = $user->role === 'Kasir';
 
         return view('profile.show', compact('user', 'isCashier'));
     }

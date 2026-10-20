@@ -242,8 +242,9 @@ class ProductTest extends TestCase
 
     public function test_cashier_cannot_manage_products(): void
     {
-        $this->signIn('Kaisr');
+        $this->signIn('Kasir');
 
+        $this->get('/produk')->assertForbidden();
         $this->get('/produk/tambah')->assertForbidden();
         $this->post('/produk', [
             'nama_produk' => 'Produk Ilegal',

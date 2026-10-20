@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesController;
@@ -12,21 +13,52 @@ Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+Route::get('/pesan', [CustomerOrderController::class, 'create'])->name('customer-orders.create');
+Route::post('/pesan', [CustomerOrderController::class, 'store'])->name('customer-orders.store');
+Route::get('/pesanan/{token}', [CustomerOrderController::class, 'track'])
+    ->whereUuid('token')
+    ->name('customer-orders.track');
+Route::get('/pesanan/{token}/status', [CustomerOrderController::class, 'trackStatus'])
+    ->whereUuid('token')
+    ->name('customer-orders.status');
+
 Route::middleware('auth')->group(function () {
-    Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/stok', [StockController::class, 'index'])->name('stocks.index');
-    Route::post('/stok', [StockController::class, 'store'])
-        ->middleware('can:manage-stocks')
-        ->name('stocks.store');
-    Route::get('/transaksi', [SalesController::class, 'index'])->name('sales.index');
-    Route::post('/transaksi', [SalesController::class, 'store'])->name('sales.store');
-    Route::get('/transaksi/{sale}', [SalesController::class, 'show'])->whereNumber('sale')->name('sales.show');
     Route::middleware('can:manage-products')->group(function () {
+        Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
         Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
         Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
         Route::get('/produk/{product}/edit', [ProductController::class, 'edit'])->whereNumber('product')->name('products.edit');
         Route::put('/produk/{product}', [ProductController::class, 'update'])->whereNumber('product')->name('products.update');
         Route::delete('/produk/{product}', [ProductController::class, 'destroy'])->whereNumber('product')->name('products.destroy');
+    });
+
+    Route::middleware('can:manage-stocks')->group(function () {
+        Route::get('/stok', [StockController::class, 'index'])->name('stocks.index');
+        Route::post('/stok', [StockController::class, 'store'])->name('stocks.store');
+    });
+
+    Route::middleware('can:view-sales')->group(function () {
+        Route::get('/transaksi', [SalesController::class, 'index'])->name('sales.index');
+        Route::get('/transaksi/{sale}', [SalesController::class, 'show'])->whereNumber('sale')->name('sales.show');
+    });
+    Route::post('/transaksi', [SalesController::class, 'store'])
+        ->middleware('can:cashier')
+        ->name('sales.store');
+
+    Route::middleware('can:cashier')->group(function () {
+        Route::get('/order-pelanggan', [CustomerOrderController::class, 'cashierIndex'])
+            ->name('customer-orders.cashier.index');
+        Route::get('/order-pelanggan/notifikasi', [CustomerOrderController::class, 'notifications'])
+            ->name('customer-orders.notifications');
+        Route::get('/order-pelanggan/{order}', [CustomerOrderController::class, 'cashierShow'])
+            ->whereNumber('order')
+            ->name('customer-orders.cashier.show');
+        Route::put('/order-pelanggan/{order}/status', [CustomerOrderController::class, 'updateStatus'])
+            ->whereNumber('order')
+            ->name('customer-orders.cashier.status');
+        Route::post('/order-pelanggan/{order}/selesaikan', [CustomerOrderController::class, 'complete'])
+            ->whereNumber('order')
+            ->name('customer-orders.cashier.complete');
     });
 
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');

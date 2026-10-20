@@ -96,7 +96,7 @@ class ProfileTest extends TestCase
             'email' => 'kasir@example.com',
             'password' => Hash::make('secret-password'),
             'status' => 'Aktif',
-            'role' => 'Kaisr',
+            'role' => 'Kasir',
         ]);
 
         $this->actingAs($user)
@@ -124,7 +124,7 @@ class ProfileTest extends TestCase
             'no_telepon' => '08111111111',
             'alamat' => 'Alamat lama',
             'status' => 'Aktif',
-            'role' => 'Kaisr',
+            'role' => 'Kasir',
         ]);
 
         $this->actingAs($user)->put('/profil', [
@@ -143,7 +143,7 @@ class ProfileTest extends TestCase
             'email' => 'kasirbaru@example.com',
             'no_telepon' => '08222222222',
             'alamat' => 'Alamat baru',
-            'role' => 'Kaisr',
+            'role' => 'Kasir',
             'status' => 'Aktif',
             'id_shift' => null,
         ]);

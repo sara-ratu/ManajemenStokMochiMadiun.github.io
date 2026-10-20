@@ -83,6 +83,7 @@
 
                 <button class="login-button" type="submit">Masuk</button>
             </form>
+            <a class="customer-order-login-link" href="{{ route('customer-orders.create') }}">Pesan sebagai pelanggan</a>
         @endauth
     </main>
 </body>

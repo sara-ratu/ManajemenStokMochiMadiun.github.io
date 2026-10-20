@@ -21,6 +21,21 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Pemesanan pelanggan
+
+- Pelanggan membuka `/pesan` dari perangkat yang dapat menjangkau server, memilih produk, lalu mengirim order tanpa login.
+- Kasir membuka `/order-pelanggan` untuk menerima notifikasi order baru dan memeriksa antrean. Halaman memeriksa order baru setiap 8 detik.
+- Setelah kasir menerima order, pembayaran diselesaikan di halaman detail order. Stok dan laporan penjualan diperbarui setelah pembayaran berhasil.
+- Pelanggan dapat memantau status melalui tautan yang diberikan setelah mengirim order. Status diperbarui otomatis selama halaman tersebut terbuka.
+
+Jalankan migrasi database sebelum menggunakan fitur:
+
+```bash
+php artisan migrate
+```
+
+Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang sama dan dapat dijangkau di jaringan. `127.0.0.1` hanya menunjuk ke perangkat yang sedang digunakan.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
