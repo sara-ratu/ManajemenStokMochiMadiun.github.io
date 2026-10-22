@@ -41,10 +41,7 @@ class LoginController extends Controller
 
         $user = User::query()
             ->where('status', 'Aktif')
-            ->where(function ($query) use ($credentials): void {
-                $query->where('email', $credentials['username'])
-                    ->orWhere('nama_lengkap', $credentials['username']);
-            })
+            ->where('nama_lengkap', $credentials['username'])
             ->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
