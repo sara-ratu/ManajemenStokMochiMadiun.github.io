@@ -4330,3 +4330,69 @@ body.login-page {
         margin-bottom: 30px;
     }
 }
+
+.customer-order-product[hidden] { display: none; }
+
+.customer-order-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 3px solid #ff8fa8;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgb(118 65 78 / 6%);
+}
+
+.customer-order-tabs {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.customer-order-tab {
+    flex: none;
+    padding: 8px 16px;
+    border: 1px solid #f1dce2;
+    border-radius: 999px;
+    background: #fff;
+    color: #74676b;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.customer-order-tab.is-active {
+    border-color: #c84463;
+    background: #c84463;
+    color: #fff;
+}
+
+.customer-order-search {
+    width: 240px;
+    min-height: 39px;
+    padding: 8px 14px;
+    border: 2px solid #000;
+    border-radius: 999px;
+    background: #fff;
+    color: #493d42;
+    font: inherit;
+    font-size: 13px;
+}
+
+.customer-order-search-empty {
+    margin: 0 0 16px;
+    color: #93858a;
+    font-size: 13px;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .customer-order-toolbar { flex-direction: column; align-items: stretch; }
+    .customer-order-search { width: 100%; }
+}
