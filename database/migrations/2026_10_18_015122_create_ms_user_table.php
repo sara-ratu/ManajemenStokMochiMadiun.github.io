@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ms_user', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+    $table->id('id_user');
+    $table->string('nama_lengkap');
+    $table->string('email')->unique();
+    $table->string('password');
+    $table->string('status')->default('Aktif');
+    $table->string('role')->default('Kasir');
+    $table->rememberToken();
+    $table->timestamps();
+});
     }
 
     /**
