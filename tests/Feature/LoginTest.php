@@ -38,12 +38,12 @@ class LoginTest extends TestCase
         $this->get('/login')->assertOk()->assertSee('Masuk');
     }
 
-    public function test_user_can_login_with_name_and_password(): void
+    public function test_user_can_login_with_email_and_password(): void
     {
         $user = $this->createActiveUser();
 
         $this->post('/login', [
-            'username' => $user->nama_lengkap,
+            'email' => $user->email,
             'password' => 'secret-password',
         ])->assertRedirect('/produk');
 
@@ -51,24 +51,12 @@ class LoginTest extends TestCase
         $this->get('/')->assertSee('Berhasil masuk!');
     }
 
-    public function test_user_can_login_with_email(): void
-    {
-        $user = $this->createActiveUser();
-
-        $this->post('/login', [
-            'username' => $user->email,
-            'password' => 'secret-password',
-        ])->assertRedirect('/produk');
-
-        $this->assertAuthenticatedAs($user);
-    }
-
     public function test_cashier_can_login_with_email_and_password(): void
     {
         $user = $this->createActiveUser(['role' => 'Kasir']);
 
         $this->post('/login', [
-            'username' => $user->email,
+            'email' => $user->email,
             'password' => 'secret-password',
         ])->assertRedirect('/transaksi');
 
@@ -80,9 +68,9 @@ class LoginTest extends TestCase
         $this->createActiveUser();
 
         $this->from('/login')->post('/login', [
-            'username' => 'Mochi Admin',
+            'email' => 'admin@example.com',
             'password' => 'wrong-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('username');
+        ])->assertRedirect('/login')->assertSessionHasErrors('email');
 
         $this->assertGuest();
     }
@@ -92,9 +80,9 @@ class LoginTest extends TestCase
         $user = $this->createActiveUser(['status' => 'TidakAktif']);
 
         $this->from('/login')->post('/login', [
-            'username' => $user->email,
+            'email' => $user->email,
             'password' => 'secret-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('username');
+        ])->assertRedirect('/login')->assertSessionHasErrors('email');
 
         $this->assertGuest();
     }

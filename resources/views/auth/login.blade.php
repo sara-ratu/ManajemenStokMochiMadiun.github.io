@@ -40,20 +40,20 @@
                 @csrf
 
                 <div class="form-field">
-                    <label for="username">Username</label>
+                    <label for="email">Email</label>
                     <input
-                        id="username"
-                        name="username"
-                        type="text"
-                        value="{{ old('username') }}"
-                        placeholder="Masukkan username"
-                        autocomplete="username"
+                        id="email"
+                        name="email"
+                        type="email"
+                        value="{{ old('email') }}"
+                        placeholder="Masukkan Email"
+                        autocomplete="email"
                         required
                         autofocus
-                        aria-describedby="{{ $errors->has('username') ? 'username-error' : '' }}"
+                        @error('email') aria-describedby="email-error" @enderror
                     >
-                    @error('username')
-                        <p class="field-error" id="username-error">{{ $message }}</p>
+                    @error('email')
+                        <p class="field-error" id="email-error">{{ $message }}</p>
                     @enderror
                 </div>
 
