@@ -7,13 +7,17 @@
     <title>Profil | Mochi Madiun</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="products-page">
+<body class="products-page catalog-page">
+    <header class="catalog-topbar">
+        <a class="catalog-brand" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}" aria-label="Mochi Madiun">
+            <span>MOCHI MADIUN</span>
+            @php($profileNow = now('Asia/Jakarta'))
+            <small><time data-live-clock datetime="{{ $profileNow->toIso8601String() }}">{{ $profileNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $profileNow->format('H.i') }}</time></small>
+        </a>
+    </header>
+
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}" aria-label="Mochi Madiun">
-                <span class="products-brand-mark" aria-hidden="true">M</span>
-                <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
-            </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 @can('manage-products')
@@ -53,10 +57,7 @@
                     <span class="account-greeting">Halo, <strong>{{ $user->nama_lengkap ?: 'Pengguna' }}</strong></span>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button class="logout-button" type="submit">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3m9-9h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg>
-                            Keluar
-                        </button>
+                        <button class="logout-button" type="submit">Keluar</button>
                     </form>
                 </div>
             </header>
