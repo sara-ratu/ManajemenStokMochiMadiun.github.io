@@ -23,6 +23,20 @@
             </div>
         </section>
 
+        @php
+            $categories = $products->pluck('category')->filter()->unique('id_kategori')->sortBy('nama_kategori');
+        @endphp
+        <div class="customer-order-toolbar">
+            <div class="customer-order-tabs" role="tablist" aria-label="Kategori produk">
+                <button type="button" class="customer-order-tab is-active" data-category-tab="">Semua</button>
+                @foreach ($categories as $category)
+                    <button type="button" class="customer-order-tab" data-category-tab="{{ $category->id_kategori }}">{{ $category->nama_kategori }}</button>
+                @endforeach
+            </div>
+            <input type="search" class="customer-order-search" id="customer-product-search" placeholder="Cari produk..." autocomplete="off" aria-label="Cari produk">
+        </div>
+        <p class="customer-order-search-empty" id="customer-search-empty" hidden>Produk tidak ditemukan.</p>
+
         @if ($errors->any())
             <div class="action-notice action-notice-error" role="alert">{{ $errors->first() }}</div>
         @endif
@@ -31,7 +45,9 @@
             @csrf
             <section class="customer-order-products" aria-label="Daftar produk">
                 @forelse ($products as $product)
-                    <article class="customer-order-product">
+                    <article class="customer-order-product"
+                        data-category="{{ $product->id_kategori }}"
+                        data-search="{{ \Illuminate\Support\Str::lower($product->nama_produk.' '.$product->category?->nama_kategori) }}">
                         <div class="customer-order-product-image">
                             @if ($product->gambar)
                                 <img
@@ -81,5 +97,36 @@
             </section>
         </form>
     </main>
+
+    <script>
+        (function () {
+            const input = document.getElementById('customer-product-search');
+            const emptyNotice = document.getElementById('customer-search-empty');
+            const cards = document.querySelectorAll('.customer-order-product');
+            const tabs = document.querySelectorAll('[data-category-tab]');
+            let activeCategory = '';
+
+            function applyFilter() {
+                const keyword = input.value.trim().toLowerCase();
+                let visible = 0;
+                cards.forEach(function (card) {
+                    const matchCategory = activeCategory === '' || card.dataset.category === activeCategory;
+                    const matchSearch = (card.dataset.search || '').includes(keyword);
+                    card.hidden = !(matchCategory && matchSearch);
+                    if (!card.hidden) visible++;
+                });
+                emptyNotice.hidden = visible !== 0 || cards.length === 0;
+            }
+
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    activeCategory = tab.dataset.categoryTab;
+                    tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+                    applyFilter();
+                });
+            });
+            input.addEventListener('input', applyFilter);
+        })();
+    </script>
 </body>
 </html>
