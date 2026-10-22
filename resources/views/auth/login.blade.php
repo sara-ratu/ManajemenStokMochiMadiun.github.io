@@ -29,7 +29,7 @@
             <section class="login-success" aria-live="polite">
                 <h1>Berhasil masuk!</h1>
                 <p>Halo, {{ auth()->user()->nama_lengkap }}. Anda sudah masuk ke akun Mochi Madiun.</p>
-                <a class="login-button login-product-link" href="{{ route('products.index') }}">Lihat produk</a>
+                <a class="login-button login-product-link" href="{{ route('dashboard') }}">Buka dashboard</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button class="login-button" type="submit">Keluar</button>

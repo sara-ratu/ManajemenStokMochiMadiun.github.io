@@ -9,7 +9,7 @@
 </head>
 <body class="products-page catalog-page stock-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('stocks.index') }}" aria-label="Mochi Madiun">
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
             <span>MOCHI MADIUN</span>
             @php($stockNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $stockNow->toIso8601String() }}">{{ $stockNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $stockNow->format('H.i') }}</time></small>
@@ -24,6 +24,10 @@
         <aside class="app-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+                    <span>Dashboard</span>
+                </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('stocks.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
                     <span>Kelola Stok</span>

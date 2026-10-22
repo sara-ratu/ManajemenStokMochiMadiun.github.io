@@ -16,8 +16,12 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
         return view('auth.login');
     }
 
@@ -62,7 +66,7 @@ class LoginController extends Controller
         ]);
         $request->session()->put('login_session_id', $loginSession->id_sesi);
 
-        return redirect()->route($user->role === 'Kasir' ? 'sales.index' : 'products.index');
+        return redirect()->route('dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse

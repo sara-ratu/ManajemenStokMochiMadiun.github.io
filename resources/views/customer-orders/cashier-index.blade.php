@@ -10,12 +10,13 @@
 <body class="products-page">
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route('sales.index') }}" aria-label="Mochi Madiun">
+            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
                 <span class="products-brand-mark" aria-hidden="true">M</span>
                 <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}"><span>Dashboard</span></a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}"><span>Transaksi</span></a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('customer-orders.cashier.index') }}" aria-current="page"><span>Order Pelanggan</span><span class="customer-order-nav-count" data-pending-count>{{ $orders->count() }}</span></a>
                 <a class="sidebar-nav-link" href="{{ route('stocks.index') }}"><span>Kelola Stok</span></a>
