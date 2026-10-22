@@ -60,7 +60,6 @@
                 <section class="products-heading stock-heading">
                     <div>
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>
-                        <h1>Data Karyawan</h1>
                         <p class="products-subtitle">Informasi akun, peran, status, dan shift karyawan Mochi Madiun.</p>
                     </div>
                 </section>
