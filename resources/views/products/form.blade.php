@@ -10,12 +10,13 @@
 <body class="products-page">
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
+            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
                 <span class="products-brand-mark" aria-hidden="true">M</span>
                 <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}"><span>Dashboard</span></a>
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>

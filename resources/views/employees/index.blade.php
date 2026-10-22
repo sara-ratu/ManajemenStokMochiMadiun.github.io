@@ -9,7 +9,7 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('employees.index') }}" aria-label="Mochi Madiun">
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
             <span>MOCHI MADIUN</span>
             @php($employeeNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $employeeNow->toIso8601String() }}">{{ $employeeNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $employeeNow->format('H.i') }}</time></small>
@@ -24,6 +24,10 @@
         <aside class="app-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+                    <span>Dashboard</span>
+                </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('employees.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
                     <span>Data Karyawan</span>

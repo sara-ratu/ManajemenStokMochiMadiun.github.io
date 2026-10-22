@@ -45,14 +45,14 @@ class LoginTest extends TestCase
         $this->post('/login', [
             'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/produk');
+        ])->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);
         $this->assertDatabaseHas('tr_sesi_login', [
             'nama_user' => $user->nama_lengkap,
             'id_shift' => null,
         ]);
-        $this->get('/')->assertSee('Berhasil masuk!');
+        $this->get('/')->assertRedirect('/dashboard');
     }
 
     public function test_user_cannot_login_with_email(): void
@@ -74,7 +74,7 @@ class LoginTest extends TestCase
         $this->post('/login', [
             'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/transaksi');
+        ])->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);
     }
@@ -122,7 +122,7 @@ class LoginTest extends TestCase
         $this->post('/login', [
             'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/produk');
+        ])->assertRedirect('/dashboard');
 
         $this->post('/logout')->assertRedirect('/login');
 
