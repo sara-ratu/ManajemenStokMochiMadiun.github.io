@@ -63,15 +63,19 @@
             </header>
 
     <main class="products-main profile-main">
-        <a class="profile-back-link" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-            {{ $isCashier ? 'Kembali ke kasir' : 'Kembali ke produk' }}
-        </a>
+        @unless ($isCashier)
+            <a class="profile-back-link" href="{{ route('products.index') }}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                Kembali ke produk
+            </a>
+        @endunless
 
         <section class="profile-heading">
             <div>
                 <p class="products-eyebrow">{{ $isCashier ? 'AKUN KASIR' : 'AKUN SAYA' }}</p>
-                <h1>{{ $isCashier ? 'Profil Kasir' : 'Profil Saya' }}</h1>
+                @unless ($isCashier)
+                    <h1>Profil Saya</h1>
+                @endunless
                 <p class="products-subtitle">{{ $isCashier ? 'Kelola informasi akun dan lihat jadwal kerja Anda.' : 'Perbarui informasi pribadi dan keamanan akun Anda.' }}</p>
             </div>
         </section>
