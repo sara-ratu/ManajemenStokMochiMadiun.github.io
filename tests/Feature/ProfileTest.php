@@ -99,7 +99,7 @@ class ProfileTest extends TestCase
             'role' => 'Kasir',
         ]);
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get('/profil')
             ->assertOk()
             ->assertSee('Profil Kasir')
@@ -109,8 +109,10 @@ class ProfileTest extends TestCase
             ->assertSee('Sore')
             ->assertSee('16:00–22:00')
             ->assertSee('Buka halaman kasir')
-            ->assertSee('Kembali ke kasir')
+            ->assertDontSee('Kembali ke kasir')
             ->assertDontSee('Kembali ke produk');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'Profil Kasir'));
     }
 
     public function test_user_can_update_personal_profile_without_changing_role_or_shift(): void
