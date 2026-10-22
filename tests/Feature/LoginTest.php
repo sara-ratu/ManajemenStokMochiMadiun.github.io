@@ -48,6 +48,10 @@ class LoginTest extends TestCase
         ])->assertRedirect('/produk');
 
         $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+            'id_shift' => null,
+        ]);
         $this->get('/')->assertSee('Berhasil masuk!');
     }
 
@@ -103,9 +107,21 @@ class LoginTest extends TestCase
     {
         $user = $this->createActiveUser();
 
-        $this->actingAs($user)->post('/logout')->assertRedirect('/login');
+        $this->post('/login', [
+            'username' => $user->email,
+            'password' => 'secret-password',
+        ])->assertRedirect('/produk');
+
+        $this->post('/logout')->assertRedirect('/login');
 
         $this->assertGuest();
+        $this->assertDatabaseHas('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+        ]);
+        $this->assertDatabaseMissing('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+            'waktu_logout' => null,
+        ]);
     }
 
     private function createActiveUser(array $attributes = []): User
