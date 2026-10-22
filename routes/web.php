@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesController;
@@ -26,6 +27,7 @@ Route::get('/pesanan/{order}/status', [CustomerOrderController::class, 'trackSta
 
 Route::middleware('auth')->group(function () {
     Route::middleware('can:manage-products')->group(function () {
+        Route::get('/karyawan', [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
         Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
         Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
