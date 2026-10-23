@@ -4445,3 +4445,97 @@ body.login-page {
 
 .customer-order-stepper input::-webkit-outer-spin-button,
 .customer-order-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.customer-order-main { width: min(1180px, calc(100% - 40px)); }
+
+.customer-order-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    align-items: start;
+}
+
+.customer-order-cart {
+    position: sticky;
+    top: 16px;
+    padding: 20px;
+    border: 1px solid #f1dce2;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgb(118 65 78 / 6%);
+}
+
+.customer-order-cart-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.customer-order-cart-heading h2 { margin: 0; color: #493d42; font-size: 18px; }
+.customer-order-cart-heading > span { color: #93858a; font-size: 12px; }
+
+.customer-order-cart-list {
+    display: grid;
+    gap: 10px;
+    max-height: 320px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    overflow-y: auto;
+    border-bottom: 1px dashed #f1dce2;
+}
+
+.customer-order-cart-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 24px;
+    align-items: center;
+    gap: 10px;
+}
+.customer-order-cart-row strong {
+    display: block;
+    overflow: hidden;
+    color: #4b3e43;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.customer-order-cart-row span { color: #93858a; font-size: 11px; }
+.customer-order-cart-row b { color: #c84463; font-size: 13px; white-space: nowrap; }
+.customer-order-cart-row button {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff1f4;
+    color: #c84463;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.customer-order-cart-empty {
+    margin: 8px 0;
+    color: #93858a;
+    font-size: 12px;
+    text-align: center;
+}
+
+.customer-order-cart .customer-order-submit-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+@media (max-width: 960px) {
+    .customer-order-layout { grid-template-columns: 1fr; }
+    .customer-order-cart { position: static; }
+}
+
+@media (max-width: 640px) {
+    .customer-order-products { grid-template-columns: 1fr; }
+}
