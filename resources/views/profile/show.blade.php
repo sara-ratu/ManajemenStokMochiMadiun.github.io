@@ -7,15 +7,29 @@
     <title>Profil | Mochi Madiun</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="products-page">
+<body class="products-page catalog-page">
+    <header class="catalog-topbar">
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
+            @php($profileNow = now('Asia/Jakarta'))
+            <small><time data-live-clock datetime="{{ $profileNow->toIso8601String() }}">{{ $profileNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $profileNow->format('H.i') }}</time></small>
+        </a>
+    </header>
+
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}" aria-label="Mochi Madiun">
-                <span class="products-brand-mark" aria-hidden="true">M</span>
-                <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
-            </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+                    <span>Beranda</span>
+                </a>
+                @can('manage-employees')
+                    <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
+                        <span>Data Karyawan</span>
+                    </a>
+                @endcan
                 @can('manage-products')
                     <a class="sidebar-nav-link" href="{{ route('products.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
@@ -31,7 +45,7 @@
                 @can('cashier')
                     <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                        <span>Order Pelanggan</span>
+                        <span>Order</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
@@ -53,24 +67,25 @@
                     <span class="account-greeting">Halo, <strong>{{ $user->nama_lengkap ?: 'Pengguna' }}</strong></span>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button class="logout-button" type="submit">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3m9-9h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg>
-                            Keluar
-                        </button>
+                        <button class="logout-button" type="submit">Keluar</button>
                     </form>
                 </div>
             </header>
 
     <main class="products-main profile-main">
-        <a class="profile-back-link" href="{{ route($isCashier ? 'sales.index' : 'products.index') }}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-            {{ $isCashier ? 'Kembali ke kasir' : 'Kembali ke produk' }}
-        </a>
+        @unless ($isCashier)
+            <a class="profile-back-link" href="{{ route('dashboard') }}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                Kembali ke produk
+            </a>
+        @endunless
 
         <section class="profile-heading">
             <div>
                 <p class="products-eyebrow">{{ $isCashier ? 'AKUN KASIR' : 'AKUN SAYA' }}</p>
-                <h1>{{ $isCashier ? 'Profil Kasir' : 'Profil Saya' }}</h1>
+                @unless ($isCashier)
+                    <h1>Profil Saya</h1>
+                @endunless
                 <p class="products-subtitle">{{ $isCashier ? 'Kelola informasi akun dan lihat jadwal kerja Anda.' : 'Perbarui informasi pribadi dan keamanan akun Anda.' }}</p>
             </div>
         </section>
@@ -107,7 +122,7 @@
                     {{ $user->nama_lengkap ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap, 0, 1)) : '?' }}
                 </div>
                 <h2>{{ $user->nama_lengkap ?: 'Nama belum diisi' }}</h2>
-                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
+                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Administrator' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
                 <span class="profile-status {{ $user->status === 'Aktif' ? 'profile-status-active' : 'profile-status-inactive' }}">
                     <span aria-hidden="true"></span>
                     {{ $user->status === 'Aktif' ? 'Akun aktif' : ($user->status === 'TidakAktif' ? 'Akun tidak aktif' : 'Status belum diatur') }}
@@ -153,7 +168,7 @@
                     </div>
 
                     <div class="profile-readonly-info">
-                        <div><span>Role</span><strong>{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
+                        <div><span>Peran</span><strong>{{ $user->role === 'SuperAdmin' ? 'Administrator' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
                         <div><span>Shift</span><strong>{{ $user->shift?->nama_shift ?: 'Belum ditentukan' }}</strong></div>
                         @if ($user->shift?->jam_mulai && $user->shift?->jam_selesai)
                             <div><span>Jam shift</span><strong>{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_mulai, 0, 5) }}–{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_selesai, 0, 5) }}</strong></div>

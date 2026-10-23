@@ -10,12 +10,18 @@
 <body class="products-page">
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
-                <span class="products-brand-mark" aria-hidden="true">M</span>
-                <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
+            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
+                <img class="mochi-logo sidebar-mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="Logo Mochi Madiun">
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}"><span>Beranda</span></a>
+                @can('manage-employees')
+                    <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
+                        <span>Data Karyawan</span>
+                    </a>
+                @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('products.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
                     <span>Produk</span>
@@ -59,8 +65,9 @@
                 <div class="action-notice action-notice-error" role="alert">Periksa kembali data produk yang Anda masukkan.</div>
             @endif
 
-            <form class="product-edit-form" action="{{ $editing ? route('products.update', $product) : route('products.store') }}" method="POST" enctype="multipart/form-data" data-category-form>
+            <form class="product-edit-form" action="{{ $editing ? route('products.update', $product) : route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="form_type" value="product">
                 @if ($editing)
                     @method('PUT')
                     <input type="hidden" name="edit_product_id" value="{{ $product->id_produk }}">
@@ -79,20 +86,18 @@
                         @error('nama_produk')<span class="form-field-error">{{ $message }}</span>@enderror
                     </div>
                     <div class="product-form-field">
-                        @if ($editing)
-                            <label for="id_kategori">ID Kategori</label>
-                            <input id="id_kategori" name="id_kategori" type="number" value="{{ old('id_kategori', $product->id_kategori) }}" min="1" step="1" placeholder="Masukkan ID kategori" data-category-id-input>
-                        @endif
-                        <label for="kategori_cari">Nama kategori <span>(ketik nama, lalu pilih)</span></label>
-                        <input id="kategori_cari" name="kategori_cari" type="search" value="{{ old('kategori_cari', $product->category?->nama_kategori) }}" placeholder="Ketik nama kategori..." autocomplete="off" data-category-search>
-                        <select id="{{ $editing ? 'pilih_id_kategori' : 'id_kategori' }}" @if (! $editing) name="id_kategori" @endif data-category-select>
+                        <label for="id_kategori">Kategori</label>
+                        <select id="id_kategori" name="id_kategori">
                             <option value="">Pilih kategori</option>
                             @foreach ($categories as $category)
                                 <option value="{{ $category->id_kategori }}" @selected((string) old('id_kategori', $product->id_kategori) === (string) $category->id_kategori)>
-                                    {{ $category->nama_kategori ?: 'Tanpa nama' }}
+                                    {{ $category->nama_kategori }}
                                 </option>
                             @endforeach
                         </select>
+                        @if ($categories->isEmpty())
+                            <span class="category-id-selection">Belum ada kategori. Tambahkan kategori dari halaman daftar produk terlebih dahulu.</span>
+                        @endif
                         @error('id_kategori')<span class="form-field-error">{{ $message }}</span>@enderror
                     </div>
                     <div class="product-form-field">

@@ -45,34 +45,50 @@ class LoginTest extends TestCase
         $this->post('/login', [
             'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/produk');
+        ])->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);
-        $this->get('/')->assertSee('Berhasil masuk!');
+        $this->assertDatabaseHas('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+            'id_shift' => null,
+        ]);
+        $this->get('/')->assertRedirect('/dashboard');
     }
 
-    public function test_user_can_login_with_email(): void
+    public function test_user_cannot_login_with_email(): void
     {
         $user = $this->createActiveUser();
 
-        $this->post('/login', [
+        $this->from('/login')->post('/login', [
             'username' => $user->email,
             'password' => 'secret-password',
-        ])->assertRedirect('/produk');
+        ])->assertRedirect('/login')->assertSessionHasErrors('username');
 
-        $this->assertAuthenticatedAs($user);
+        $this->assertGuest();
     }
 
-    public function test_cashier_can_login_with_email_and_password(): void
+    public function test_cashier_can_login_with_name_and_password(): void
     {
         $user = $this->createActiveUser(['role' => 'Kasir']);
 
         $this->post('/login', [
-            'username' => $user->email,
+            'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/transaksi');
+        ])->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_cashier_cannot_login_with_email(): void
+    {
+        $user = $this->createActiveUser(['role' => 'Kasir']);
+
+        $this->from('/login')->post('/login', [
+            'username' => $user->email,
+            'password' => 'secret-password',
+        ])->assertRedirect('/login')->assertSessionHasErrors('username');
+
+        $this->assertGuest();
     }
 
     public function test_invalid_credentials_return_to_login_with_an_error(): void
@@ -92,7 +108,7 @@ class LoginTest extends TestCase
         $user = $this->createActiveUser(['status' => 'TidakAktif']);
 
         $this->from('/login')->post('/login', [
-            'username' => $user->email,
+            'username' => $user->nama_lengkap,
             'password' => 'secret-password',
         ])->assertRedirect('/login')->assertSessionHasErrors('username');
 
@@ -103,9 +119,21 @@ class LoginTest extends TestCase
     {
         $user = $this->createActiveUser();
 
-        $this->actingAs($user)->post('/logout')->assertRedirect('/login');
+        $this->post('/login', [
+            'username' => $user->nama_lengkap,
+            'password' => 'secret-password',
+        ])->assertRedirect('/dashboard');
+
+        $this->post('/logout')->assertRedirect('/login');
 
         $this->assertGuest();
+        $this->assertDatabaseHas('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+        ]);
+        $this->assertDatabaseMissing('tr_sesi_login', [
+            'nama_user' => $user->nama_lengkap,
+            'waktu_logout' => null,
+        ]);
     }
 
     private function createActiveUser(array $attributes = []): User
