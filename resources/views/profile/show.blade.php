@@ -9,8 +9,8 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             @php($profileNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $profileNow->toIso8601String() }}">{{ $profileNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $profileNow->format('H.i') }}</time></small>
         </a>
@@ -22,7 +22,7 @@
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
-                    <span>Dashboard</span>
+                    <span>Beranda</span>
                 </a>
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
@@ -45,7 +45,7 @@
                 @can('cashier')
                     <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                        <span>Order Pelanggan</span>
+                        <span>Order</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
@@ -122,7 +122,7 @@
                     {{ $user->nama_lengkap ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap, 0, 1)) : '?' }}
                 </div>
                 <h2>{{ $user->nama_lengkap ?: 'Nama belum diisi' }}</h2>
-                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
+                <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Administrator' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
                 <span class="profile-status {{ $user->status === 'Aktif' ? 'profile-status-active' : 'profile-status-inactive' }}">
                     <span aria-hidden="true"></span>
                     {{ $user->status === 'Aktif' ? 'Akun aktif' : ($user->status === 'TidakAktif' ? 'Akun tidak aktif' : 'Status belum diatur') }}
@@ -168,7 +168,7 @@
                     </div>
 
                     <div class="profile-readonly-info">
-                        <div><span>Role</span><strong>{{ $user->role === 'SuperAdmin' ? 'Super Admin' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
+                        <div><span>Peran</span><strong>{{ $user->role === 'SuperAdmin' ? 'Administrator' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Belum diatur')) }}</strong></div>
                         <div><span>Shift</span><strong>{{ $user->shift?->nama_shift ?: 'Belum ditentukan' }}</strong></div>
                         @if ($user->shift?->jam_mulai && $user->shift?->jam_selesai)
                             <div><span>Jam shift</span><strong>{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_mulai, 0, 5) }}–{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_selesai, 0, 5) }}</strong></div>

@@ -18,7 +18,10 @@ class DashboardTest extends TestCase
 
         Schema::dropIfExists('ms_user');
         Schema::dropIfExists('ms_produk');
+        Schema::dropIfExists('ms_kategori');
         Schema::dropIfExists('tr_pesanan');
+        Schema::dropIfExists('tr_detail_pesanan');
+        Schema::dropIfExists('tr_pembayaran');
 
         Schema::create('ms_user', function ($table): void {
             $table->integer('id_user')->primary();
@@ -42,12 +45,35 @@ class DashboardTest extends TestCase
             $table->string('gambar', 100)->nullable();
         });
 
+        Schema::create('ms_kategori', function ($table): void {
+            $table->integer('id_kategori')->primary();
+            $table->string('nama_kategori', 50);
+        });
+
         Schema::create('tr_pesanan', function ($table): void {
             $table->integer('id_pesanan')->primary();
             $table->dateTime('tanggal');
             $table->unsignedInteger('total');
             $table->string('status', 12);
             $table->string('ms_user_id_user', 20)->nullable();
+        });
+
+        Schema::create('tr_detail_pesanan', function ($table): void {
+            $table->integer('id_detail')->primary();
+            $table->string('id_pesanan', 20);
+            $table->string('id_produk', 20);
+            $table->unsignedInteger('jumlah');
+            $table->unsignedInteger('harga');
+            $table->unsignedInteger('sub_total');
+        });
+
+        Schema::create('tr_pembayaran', function ($table): void {
+            $table->integer('id_pembayaran')->primary();
+            $table->string('id_pesanan', 20);
+            $table->string('metode', 20);
+            $table->unsignedInteger('jumlah');
+            $table->string('status_pembayaran', 12);
+            $table->dateTime('waktu_bayar')->nullable();
         });
     }
 
@@ -64,18 +90,23 @@ class DashboardTest extends TestCase
         $this->createProduct(2, 'Mochi Coklat', 3);
         $this->createOrder(1, 'Selesai', 50000);
         $this->createOrder(2, 'Pending', 20000);
+        $this->createPayment(1, 'Tunai', 50000);
+        $this->createDetail(1, 1, 1, 'Mochi Kacang', 3);
 
         $this->actingAs($admin)
             ->get('/dashboard')
             ->assertOk()
-            ->assertSee('DASHBOARD SUPER ADMIN')
-            ->assertSee('Total Karyawan')
-            ->assertSee('Total Produk')
-            ->assertSee('Total Stok')
-            ->assertSee('Omzet Hari Ini')
-            ->assertSee('Data Karyawan')
-            ->assertSee('Laporan Penjualan')
-            ->assertDontSee('Order Pelanggan');
+            ->assertSee('Administrator')
+            ->assertSee('Karyawan')
+            ->assertSee('Laporan')
+            ->assertSee('Grafik Penjualan')
+            ->assertSee('Pendapatan')
+            ->assertSee('Tunai')
+            ->assertSee('QRIS')
+            ->assertSee('Transaksi Terakhir')
+            ->assertSee('Produk Terlaris')
+            ->assertSee('Rp50.000')
+            ->assertDontSee('Pesanan Pelanggan');
     }
 
     public function test_cashier_sees_pending_orders_and_cashier_links_only(): void
@@ -84,14 +115,16 @@ class DashboardTest extends TestCase
         $this->createProduct(1, 'Mochi Kacang', 18);
         $this->createOrder(1, 'Selesai', 50000);
         $this->createOrder(2, 'Pending', 20000);
+        $this->createPayment(1, 'QRIS', 50000);
 
         $this->actingAs($cashier)
             ->get('/dashboard')
             ->assertOk()
-            ->assertSee('DASHBOARD KASIR')
-            ->assertSee('Transaksi Hari Ini')
-            ->assertSee('Order Menunggu')
-            ->assertSee('Order Pelanggan')
+            ->assertSee('Kasir')
+            ->assertSee('Pesanan Selesai')
+            ->assertSee('Metode Pembayaran')
+            ->assertSee('Order')
+            ->assertSee('dashboard-sidebar-count', false)
             ->assertSee('Kelola Stok')
             ->assertDontSee('Data Karyawan')
             ->assertDontSee('Produk</strong>');
@@ -126,6 +159,35 @@ class DashboardTest extends TestCase
             'tanggal' => now('Asia/Jakarta')->toDateTimeString(),
             'total' => $total,
             'status' => $status,
+        ]);
+    }
+
+    private function createPayment(int $id, string $method, int $amount): void
+    {
+        Schema::getConnection()->table('tr_pembayaran')->insert([
+            'id_pembayaran' => $id,
+            'id_pesanan' => '1',
+            'metode' => $method,
+            'jumlah' => $amount,
+            'status_pembayaran' => 'Lunas',
+            'waktu_bayar' => now('Asia/Jakarta')->toDateTimeString(),
+        ]);
+    }
+
+    private function createDetail(int $id, int $saleId, int $productId, string $productName, int $quantity): void
+    {
+        Schema::getConnection()->table('ms_kategori')->insertOrIgnore([
+            'id_kategori' => 1,
+            'nama_kategori' => 'Mochi',
+        ]);
+        Schema::getConnection()->table('ms_produk')->where('id_produk', $productId)->update(['id_kategori' => 1]);
+        Schema::getConnection()->table('tr_detail_pesanan')->insert([
+            'id_detail' => $id,
+            'id_pesanan' => (string) $saleId,
+            'id_produk' => (string) $productId,
+            'jumlah' => $quantity,
+            'harga' => 10000,
+            'sub_total' => $quantity * 10000,
         ]);
     }
 }

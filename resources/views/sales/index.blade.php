@@ -9,8 +9,8 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             @php($salesNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $salesNow->toIso8601String() }}">{{ $salesNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $salesNow->format('H.i') }}</time></small>
         </a>
@@ -28,7 +28,7 @@
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
-                    <span>Dashboard</span>
+                    <span>Beranda</span>
                 </a>
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
@@ -51,7 +51,7 @@
                 @can('cashier')
                     <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                        <span>Order Pelanggan</span>
+                        <span>Order</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('sales.index') }}" aria-current="page">

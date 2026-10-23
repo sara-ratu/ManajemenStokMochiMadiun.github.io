@@ -70,7 +70,7 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Profil Saya')
             ->assertSee('Mochi Admin')
-            ->assertSee('Super Admin')
+            ->assertSee('Administrator')
             ->assertSee('admin@example.com')
             ->assertSee('08123456789')
             ->assertSee('Madiun')
