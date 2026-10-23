@@ -131,6 +131,41 @@ class SalesTest extends TestCase
         $this->post('/transaksi', [])->assertForbidden();
     }
 
+    public function test_sales_history_can_be_filtered_by_a_custom_date_range(): void
+    {
+        $this->signIn('SuperAdmin');
+        $this->createSale(1, \Illuminate\Support\Carbon::parse('2026-10-23 12:00:00'));
+        $this->createSale(2, \Illuminate\Support\Carbon::parse('2026-10-22 12:00:00'));
+        $this->createSale(3, \Illuminate\Support\Carbon::parse('2026-10-19 12:00:00'));
+
+        $this->get('/transaksi?start_date=2026-10-22&end_date=2026-10-23')
+            ->assertOk()
+            ->assertSee('#1')
+            ->assertSee('#2')
+            ->assertDontSee('#3')
+            ->assertSee('2 transaksi');
+
+        $this->get('/transaksi')
+            ->assertOk()
+            ->assertSee('#1')
+            ->assertSee('#2')
+            ->assertSee('#3')
+            ->assertSee('3 transaksi');
+    }
+
+    public function test_custom_sales_history_range_requires_valid_ordered_dates(): void
+    {
+        $this->signIn('SuperAdmin');
+
+        $this->get('/transaksi?start_date=2026-10-22')
+            ->assertRedirect()
+            ->assertSessionHasErrors('end_date');
+
+        $this->get('/transaksi?start_date=2026-10-24&end_date=2026-10-23')
+            ->assertRedirect()
+            ->assertSessionHasErrors('end_date');
+    }
+
     public function test_customer_can_submit_order_and_track_status_without_reserving_stock(): void
     {
         $this->createCategory(1, 'Mochi Klasik');
@@ -418,6 +453,17 @@ class SalesTest extends TestCase
             'nama_produk' => $name,
             'harga' => $price,
             'stok' => $stock,
+        ]);
+    }
+
+    private function createSale(int $id, \Illuminate\Support\Carbon $date): void
+    {
+        DB::table('tr_pesanan')->insert([
+            'id_pesanan' => $id,
+            'tanggal' => $date->toDateTimeString(),
+            'total' => 10000,
+            'status' => 'Selesai',
+            'ms_user_id_user' => '1',
         ]);
     }
 }
