@@ -10,12 +10,18 @@
 <body class="products-page">
     <div class="products-app-shell">
         <aside class="app-sidebar">
-            <a class="sidebar-brand" href="{{ route('products.index') }}" aria-label="Mochi Madiun">
-                <span class="products-brand-mark" aria-hidden="true">M</span>
-                <span class="sidebar-brand-name">MOCHI <strong>MADIUN</strong></span>
+            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
+                <img class="mochi-logo sidebar-mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="Logo Mochi Madiun">
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}"><span>Beranda</span></a>
+                @can('manage-employees')
+                    <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
+                        <span>Data Karyawan</span>
+                    </a>
+                @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('products.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
                     <span>Produk</span>
