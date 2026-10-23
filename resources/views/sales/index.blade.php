@@ -212,10 +212,29 @@
                     <div class="stock-history-heading">
                         <div>
                             <h2>Riwayat Transaksi</h2>
-                            <p>Daftar transaksi penjualan yang tercatat.</p>
+                            <p>Daftar transaksi penjualan sesuai rentang tanggal.</p>
                         </div>
                         <span class="sales-history-count">{{ number_format($sales->total(), 0, ',', '.') }} transaksi</span>
                     </div>
+                    <form class="sales-history-filter" method="GET" action="{{ route('sales.index') }}">
+                        @if ($search !== '')
+                            <input type="hidden" name="q" value="{{ $search }}">
+                        @endif
+                        <div class="sales-history-filter-field">
+                            <label for="sales-start-date">Dari tanggal</label>
+                            <input id="sales-start-date" type="date" name="start_date" value="{{ $startDate }}">
+                        </div>
+                        <div class="sales-history-filter-field">
+                            <label for="sales-end-date">Sampai tanggal</label>
+                            <input id="sales-end-date" type="date" name="end_date" value="{{ $endDate }}">
+                        </div>
+                        <div class="sales-history-filter-actions">
+                            <button class="sales-history-filter-submit" type="submit">Terapkan</button>
+                            @if ($startDate || $endDate)
+                                <a class="stock-clear-filter" href="{{ route('sales.index', $search !== '' ? ['q' => $search] : []) }}">Reset</a>
+                            @endif
+                        </div>
+                    </form>
                     <div class="catalog-table-scroll">
                         <table class="stock-table sales-history-table">
                             <thead>

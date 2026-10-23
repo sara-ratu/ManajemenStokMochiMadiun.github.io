@@ -3447,6 +3447,56 @@ body.login-page {
     min-height: 82px;
 }
 
+.sales-history-filter {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0 20px 18px;
+}
+
+.sales-history-filter-field {
+    display: grid;
+    min-width: 160px;
+    gap: 6px;
+}
+
+.sales-history-filter-field label {
+    color: #765962;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sales-history-filter-field input {
+    min-height: 40px;
+    padding: 0 11px;
+    border: 1px solid #ead6dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #51434a;
+    font: inherit;
+    font-size: 12px;
+}
+
+.sales-history-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sales-history-filter-submit {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 9px;
+    background: #a84c63;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .sales-history-count {
     display: inline-flex;
     min-height: 30px;

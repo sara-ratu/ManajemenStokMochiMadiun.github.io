@@ -60,7 +60,6 @@
                 <section class="products-heading stock-heading">
                     <div>
                         <p class="products-eyebrow">ANTREAN ORDER</p>
-                        <h1>Order Pelanggan</h1>
                         <p class="products-subtitle">Periksa order baru dan konfirmasi pembayaran. Daftar diperbarui setiap 8 detik.</p>
                     </div>
                     <span class="customer-order-pending-summary"><strong data-pending-count>{{ $orders->count() }}</strong> menunggu</span>
