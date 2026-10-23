@@ -353,7 +353,7 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         }
 
         const order = await response.json();
-        statusLabel.textContent = order.status;
+        statusLabel.textContent = order.status === 'Pending' ? 'Menunggu' : order.status;
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
 

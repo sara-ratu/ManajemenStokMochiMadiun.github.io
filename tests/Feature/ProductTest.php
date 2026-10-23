@@ -64,7 +64,7 @@ class ProductTest extends TestCase
 
         $this->get('/produk')
             ->assertOk()
-            ->assertSee('MOCHI MADIUN')
+            ->assertSee('Beranda Mochi Madiun')
             ->assertSee('<div class="topbar-page-label">Produk</div>', false)
             ->assertSee('KATALOG TOKO')
             ->assertDontSee('<h1>Produk</h1>', false)
