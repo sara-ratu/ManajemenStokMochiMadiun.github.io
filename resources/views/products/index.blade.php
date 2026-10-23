@@ -9,8 +9,8 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             @php($catalogNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $catalogNow->toIso8601String() }}">{{ $catalogNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $catalogNow->format('H.i') }}</time></small>
         </a>
@@ -29,7 +29,7 @@
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
-                    <span>Dashboard</span>
+                    <span>Beranda</span>
                 </a>
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">

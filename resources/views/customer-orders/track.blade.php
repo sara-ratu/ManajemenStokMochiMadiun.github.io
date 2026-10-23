@@ -10,7 +10,7 @@
 <body class="products-page customer-order-page">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('customer-orders.create') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             <small>Status pesanan pelanggan</small>
         </a>
     </header>
@@ -19,7 +19,7 @@
             <p class="products-eyebrow">PESANAN #{{ $customerOrder->id_pesanan }}</p>
             <h1>Pesanan berhasil dikirim</h1>
             <p>Kasir akan memeriksa pesananmu. Halaman ini memperbarui status secara otomatis.</p>
-            <div class="customer-order-status-pill" data-status-label>{{ $customerOrder->status }}</div>
+            <div class="customer-order-status-pill" data-status-label>{{ $customerOrder->status === 'Pending' ? 'Menunggu' : $customerOrder->status }}</div>
             <p class="customer-order-status-message" data-status-message>
                 @if ($customerOrder->status === 'Pending')
                     Menunggu konfirmasi dari kasir.

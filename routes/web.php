@@ -29,8 +29,16 @@ Route::get('/pesanan/{order}/status', [CustomerOrderController::class, 'trackSta
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware('can:manage-products')->group(function () {
+    Route::middleware('can:manage-employees')->group(function () {
         Route::get('/karyawan', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('/karyawan/tambah', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/karyawan', [EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('/karyawan/{employee}/edit', [EmployeeController::class, 'edit'])->whereNumber('employee')->name('employees.edit');
+        Route::put('/karyawan/{employee}', [EmployeeController::class, 'update'])->whereNumber('employee')->name('employees.update');
+        Route::delete('/karyawan/{employee}', [EmployeeController::class, 'destroy'])->whereNumber('employee')->name('employees.destroy');
+    });
+
+    Route::middleware('can:manage-products')->group(function () {
         Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
         Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
         Route::post('/produk', [ProductController::class, 'store'])->name('products.store');

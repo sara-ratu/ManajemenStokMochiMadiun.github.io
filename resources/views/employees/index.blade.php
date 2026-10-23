@@ -9,8 +9,8 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             @php($employeeNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $employeeNow->toIso8601String() }}">{{ $employeeNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $employeeNow->format('H.i') }}</time></small>
         </a>
@@ -26,7 +26,7 @@
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
-                    <span>Dashboard</span>
+                    <span>Beranda</span>
                 </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('employees.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
@@ -61,11 +61,19 @@
             </header>
 
             <main class="products-main stock-main">
+                @if (session('status'))
+                    <div class="action-notice action-notice-success" role="status">{{ session('status') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="action-notice action-notice-error" role="alert">{{ session('error') }}</div>
+                @endif
+
                 <section class="products-heading stock-heading">
                     <div>
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>
                         <p class="products-subtitle">Informasi akun, peran, status, dan shift karyawan Mochi Madiun.</p>
                     </div>
+                    <a class="add-product-button" href="{{ route('employees.create') }}"><span aria-hidden="true">+</span>Tambah Karyawan</a>
                 </section>
 
                 <section class="stock-summary" aria-label="Ringkasan data karyawan">
@@ -110,6 +118,7 @@
                                     <th scope="col">Jabatan</th>
                                     <th scope="col">Shift</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -119,7 +128,7 @@
                                         <td class="stock-product-cell">{{ $employee->nama_lengkap ?: 'Nama belum diisi' }}</td>
                                         <td>{{ $employee->email ?: '—' }}</td>
                                         <td>{{ $employee->no_telepon ?: '—' }}</td>
-                                        <td>{{ $employee->role === 'SuperAdmin' ? 'Super Admin' : ($employee->role ?: 'Belum diatur') }}</td>
+                                        <td>{{ $employee->role === 'SuperAdmin' ? 'Administrator' : ($employee->role ?: 'Belum diatur') }}</td>
                                         <td>
                                             @if ($employee->shift)
                                                 {{ $employee->shift->nama_shift }}
@@ -136,10 +145,28 @@
                                                 {{ $employee->status === 'Aktif' ? 'Aktif' : ($employee->status ?: 'Belum diatur') }}
                                             </span>
                                         </td>
+                                        <td>
+                                            @if ($employee->role === 'Kasir')
+                                                <div class="catalog-row-actions">
+                                                    <a class="catalog-icon-action catalog-edit-action" href="{{ route('employees.edit', $employee->id_user) }}" aria-label="Ubah {{ $employee->nama_lengkap }}" title="Ubah karyawan">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+                                                    </a>
+                                                    <form action="{{ route('employees.destroy', $employee->id_user) }}" method="POST" data-confirm-delete>
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="catalog-icon-action catalog-delete-action" type="submit" aria-label="Hapus {{ $employee->nama_lengkap }}" title="Hapus karyawan">
+                                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @else
+                                                <span class="employee-protected-label">Akun administrator</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="stock-empty-cell" colspan="7">
+                                        <td class="stock-empty-cell" colspan="8">
                                             <span aria-hidden="true">👥</span>
                                             <strong>{{ $search !== '' ? 'Karyawan tidak ditemukan' : 'Belum ada data karyawan' }}</strong>
                                             <span>{{ $search !== '' ? 'Coba kata pencarian lain.' : 'Akun karyawan yang terdaftar akan tampil di sini.' }}</span>
@@ -156,5 +183,18 @@
             </main>
         </div>
     </div>
+    <dialog class="delete-confirm-dialog" aria-labelledby="employee-delete-title" aria-describedby="employee-delete-message" data-delete-dialog>
+        <div class="delete-confirm-heading">
+            <h2 id="employee-delete-title">Hapus Karyawan?</h2>
+            <button type="button" class="delete-confirm-close" aria-label="Tutup" data-close-delete-dialog>&times;</button>
+        </div>
+        <div class="delete-confirm-body">
+            <p id="employee-delete-message">Yakin ingin menghapus akun karyawan ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="delete-confirm-actions">
+                <button type="button" class="delete-confirm-accept" data-confirm-delete-action>Ya, hapus</button>
+                <button type="button" class="delete-confirm-cancel" data-close-delete-dialog>Batal</button>
+            </div>
+        </div>
+    </dialog>
 </body>
 </html>
