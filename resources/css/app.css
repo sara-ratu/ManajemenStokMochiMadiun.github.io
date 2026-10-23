@@ -4385,6 +4385,7 @@ body.login-page {
     font-size: 13px;
 }
 
+
 .customer-order-search-empty {
     margin: 0 0 16px;
     color: #93858a;
@@ -4396,3 +4397,51 @@ body.login-page {
     .customer-order-toolbar { flex-direction: column; align-items: stretch; }
     .customer-order-search { width: 100%; }
 }
+
+.customer-order-product { grid-template-columns: 76px minmax(0, 1fr) 112px; }
+
+.customer-order-add {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid #f1dce2;
+    border-radius: 10px;
+    background: #fff;
+    color: #c84463;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.customer-order-add:hover { background: #fff1f4; }
+
+.customer-order-stepper { display: flex; align-items: center; gap: 4px; }
+.customer-order-stepper[hidden],
+.customer-order-add[hidden] { display: none; }
+
+.customer-order-stepper button {
+    flex: none;
+    width: 28px;
+    height: 32px;
+    border: 1px solid #f1dce2;
+    border-radius: 8px;
+    background: #fff;
+    color: #c84463;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.customer-order-stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.customer-order-stepper input {
+    width: 36px;
+    min-height: 32px;
+    padding: 4px;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.customer-order-stepper input::-webkit-outer-spin-button,
+.customer-order-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
