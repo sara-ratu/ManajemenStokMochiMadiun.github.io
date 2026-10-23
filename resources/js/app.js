@@ -37,70 +37,6 @@ document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     });
 });
 
-document.querySelectorAll('[data-category-form]').forEach((form) => {
-    const search = form.querySelector('[data-category-search]');
-    const select = form.querySelector('[data-category-select]');
-    const idInput = form.querySelector('[data-category-id-input]');
-
-    if (!(search instanceof HTMLInputElement) || !(select instanceof HTMLSelectElement)) {
-        return;
-    }
-
-    const getOptionById = (id) => Array.from(select.options).find((option) => option.value === id);
-    const initialOption = select.selectedOptions[0];
-    if (initialOption?.value) {
-        if (idInput instanceof HTMLInputElement) {
-            idInput.value = initialOption.value;
-        }
-        if (!search.value) {
-            search.value = initialOption.textContent.trim();
-        }
-    }
-
-    const filterCategories = () => {
-        const query = search.value.trim().toLocaleLowerCase('id-ID');
-        const options = Array.from(select.options).slice(1);
-
-        options.forEach((option) => {
-            option.hidden = query !== '' && !option.textContent.trim().toLocaleLowerCase('id-ID').includes(query);
-        });
-
-        if (select.selectedOptions[0]?.hidden) {
-            select.value = '';
-        }
-    };
-
-    search.addEventListener('input', () => {
-        select.value = '';
-        if (idInput instanceof HTMLInputElement) {
-            idInput.value = '';
-        }
-        filterCategories();
-    });
-
-    select.addEventListener('change', () => {
-        const option = select.selectedOptions[0];
-        if (option?.value) {
-            if (idInput instanceof HTMLInputElement) {
-                idInput.value = option.value;
-            }
-            search.value = option.textContent.trim();
-        }
-        filterCategories();
-    });
-
-    if (idInput instanceof HTMLInputElement) {
-        idInput.addEventListener('input', () => {
-            const option = getOptionById(idInput.value.trim());
-            select.value = option?.value ?? '';
-            search.value = option?.textContent.trim() ?? '';
-            filterCategories();
-        });
-    }
-
-    filterCategories();
-});
-
 document.querySelectorAll('[data-stock-product-search]').forEach((search) => {
     const form = search.closest('form');
     const select = form?.querySelector('[data-stock-product-select]');
@@ -417,7 +353,7 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         }
 
         const order = await response.json();
-        statusLabel.textContent = order.status;
+        statusLabel.textContent = order.status === 'Pending' ? 'Menunggu' : order.status;
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
 

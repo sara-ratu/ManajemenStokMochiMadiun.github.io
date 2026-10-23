@@ -10,7 +10,7 @@
 <body class="products-page customer-order-page">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('customer-orders.create') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             <small>Menu pemesanan pelanggan</small>
         </a>
     </header>

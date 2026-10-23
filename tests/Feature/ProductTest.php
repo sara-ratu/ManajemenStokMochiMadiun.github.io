@@ -37,7 +37,7 @@ class ProductTest extends TestCase
         });
 
         Schema::create('ms_kategori', function ($table): void {
-            $table->integer('id_kategori')->primary();
+            $table->increments('id_kategori');
             $table->string('nama_kategori', 30)->nullable();
         });
 
@@ -64,7 +64,7 @@ class ProductTest extends TestCase
 
         $this->get('/produk')
             ->assertOk()
-            ->assertSee('MOCHI MADIUN')
+            ->assertSee('Beranda Mochi Madiun')
             ->assertSee('<div class="topbar-page-label">Produk</div>', false)
             ->assertSee('KATALOG TOKO')
             ->assertDontSee('<h1>Produk</h1>', false)
@@ -91,18 +91,18 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertSee('data-open-product-dialog', false)
             ->assertSee('data-product-dialog', false)
+            ->assertSee('Tambah Kategori')
+            ->assertSee('Simpan Kategori')
             ->assertSee('Gambar Produk')
-            ->assertSee('ketik nama, lalu pilih')
+            ->assertSee('Kategori belum ada?')
             ->assertSee('Mis. Mochi original')
             ->assertSee('Simpan Produk')
             ->assertSee('Batal')
             ->assertSee('data-confirm-delete-action', false)
             ->assertSee('Ya, hapus')
             ->assertSee('edit-id-produk-', false)
-            ->assertSee('ID Kategori')
-            ->assertSee('data-category-id-input', false)
-            ->assertSee('id="edit-id-kategori-1" name="id_kategori" type="number"', false)
-            ->assertSee('type="number"', false)
+            ->assertSee('name="id_kategori"', false)
+            ->assertDontSee('Masukkan ID kategori')
             ->assertSee('edit-stok-', false)
             ->assertDontSee('name="stok"', false)
             ->assertDontSee('dialog-stok', false);
@@ -163,11 +163,11 @@ class ProductTest extends TestCase
         $this->get('/produk/1/edit')
             ->assertOk()
             ->assertSee('ID Produk')
-            ->assertSee('ID Kategori')
-            ->assertSee('Nama kategori')
+            ->assertSee('Kategori')
             ->assertSee('Stok')
             ->assertSee('id="stok"', false)
-            ->assertSee('id="id_kategori" name="id_kategori" type="number"', false)
+            ->assertSee('id="id_kategori" name="id_kategori"', false)
+            ->assertDontSee('Masukkan ID kategori')
             ->assertDontSee('name="stok"', false);
 
         $this->put('/produk/1', [
@@ -208,6 +208,56 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function test_super_admin_can_create_category_and_use_it_for_product(): void
+    {
+        $this->signIn();
+
+        $this->post('/kategori', [
+            'form_type' => 'category',
+            'nama_kategori' => 'Mochi Premium',
+        ])->assertRedirect('/produk')->assertSessionHas('status');
+
+        $this->assertDatabaseHas('ms_kategori', [
+            'id_kategori' => 1,
+            'nama_kategori' => 'Mochi Premium',
+        ]);
+
+        $this->get('/produk')
+            ->assertOk()
+            ->assertSee('Mochi Premium')
+            ->assertSee('Tambah Kategori');
+
+        $this->post('/produk', [
+            'form_type' => 'product',
+            'nama_produk' => 'Mochi Matcha',
+            'id_kategori' => 1,
+            'harga' => 18000,
+        ])->assertRedirect('/produk')->assertSessionHas('status');
+
+        $this->assertDatabaseHas('ms_produk', [
+            'nama_produk' => 'Mochi Matcha',
+            'id_kategori' => 1,
+        ]);
+    }
+
+    public function test_duplicate_category_name_is_rejected_and_add_category_dialog_reopens(): void
+    {
+        $this->signIn();
+        $this->createCategory(1, 'Mochi Premium');
+
+        $this->from('/produk')->post('/kategori', [
+            'form_type' => 'category',
+            'nama_kategori' => 'Mochi Premium',
+        ])->assertRedirect('/produk')->assertSessionHasErrors('nama_kategori');
+
+        $this->get('/produk')
+            ->assertOk()
+            ->assertSee('data-open-on-load', false)
+            ->assertSee('Nama kategori tersebut sudah digunakan.');
+
+        $this->assertDatabaseCount('ms_kategori', 1);
+    }
+
     public function test_invalid_product_image_url_returns_to_catalog_with_dialog_errors(): void
     {
         $this->signIn();
@@ -246,6 +296,7 @@ class ProductTest extends TestCase
 
         $this->get('/produk')->assertForbidden();
         $this->get('/produk/tambah')->assertForbidden();
+        $this->post('/kategori', ['nama_kategori' => 'Kategori Ilegal'])->assertForbidden();
         $this->post('/produk', [
             'nama_produk' => 'Produk Ilegal',
             'harga' => 1000,

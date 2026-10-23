@@ -9,8 +9,8 @@
 </head>
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
-        <a class="catalog-brand" href="{{ route(auth()->user()->can('manage-products') ? 'products.index' : 'sales.index') }}" aria-label="Mochi Madiun">
-            <span>MOCHI MADIUN</span>
+        <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
+            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
             @php($salesNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $salesNow->toIso8601String() }}">{{ $salesNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $salesNow->format('H.i') }}</time></small>
         </a>
@@ -26,6 +26,16 @@
         <aside class="app-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
+                <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+                    <span>Beranda</span>
+                </a>
+                @can('manage-employees')
+                    <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
+                        <span>Data Karyawan</span>
+                    </a>
+                @endcan
                 @can('manage-products')
                     <a class="sidebar-nav-link" href="{{ route('products.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
@@ -41,7 +51,7 @@
                 @can('cashier')
                     <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                        <span>Order Pelanggan</span>
+                        <span>Order</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('sales.index') }}" aria-current="page">
@@ -202,10 +212,29 @@
                     <div class="stock-history-heading">
                         <div>
                             <h2>Riwayat Transaksi</h2>
-                            <p>Daftar transaksi penjualan yang tercatat.</p>
+                            <p>Daftar transaksi penjualan sesuai rentang tanggal.</p>
                         </div>
                         <span class="sales-history-count">{{ number_format($sales->total(), 0, ',', '.') }} transaksi</span>
                     </div>
+                    <form class="sales-history-filter" method="GET" action="{{ route('sales.index') }}">
+                        @if ($search !== '')
+                            <input type="hidden" name="q" value="{{ $search }}">
+                        @endif
+                        <div class="sales-history-filter-field">
+                            <label for="sales-start-date">Dari tanggal</label>
+                            <input id="sales-start-date" type="date" name="start_date" value="{{ $startDate }}">
+                        </div>
+                        <div class="sales-history-filter-field">
+                            <label for="sales-end-date">Sampai tanggal</label>
+                            <input id="sales-end-date" type="date" name="end_date" value="{{ $endDate }}">
+                        </div>
+                        <div class="sales-history-filter-actions">
+                            <button class="sales-history-filter-submit" type="submit">Terapkan</button>
+                            @if ($startDate || $endDate)
+                                <a class="stock-clear-filter" href="{{ route('sales.index', $search !== '' ? ['q' => $search] : []) }}">Reset</a>
+                            @endif
+                        </div>
+                    </form>
                     <div class="catalog-table-scroll">
                         <table class="stock-table sales-history-table">
                             <thead>

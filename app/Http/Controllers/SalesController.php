@@ -15,7 +15,12 @@ class SalesController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'start_date' => ['nullable', 'required_with:end_date', 'date'],
+            'end_date' => ['nullable', 'required_with:start_date', 'date', 'after_or_equal:start_date'],
         ]);
+
+        $startDate = $filters['start_date'] ?? null;
+        $endDate = $filters['end_date'] ?? null;
 
         $products = Product::query()
             ->with('category')
@@ -30,8 +35,15 @@ class SalesController extends Controller
             ->orderBy('nama_produk')
             ->get();
 
+        $filteredSales = DB::table('tr_pesanan')
+            ->where('status', 'Selesai')
+            ->when($startDate, fn ($query) => $query->whereDate('tanggal', '>=', $startDate))
+            ->when($endDate, fn ($query) => $query->whereDate('tanggal', '<=', $endDate));
+
         $sales = DB::table('tr_pesanan as sale')
             ->where('sale.status', 'Selesai')
+            ->when($startDate, fn ($query) => $query->whereDate('sale.tanggal', '>=', $startDate))
+            ->when($endDate, fn ($query) => $query->whereDate('sale.tanggal', '<=', $endDate))
             ->leftJoin('ms_user as user', 'user.id_user', '=', 'sale.ms_user_id_user')
             ->select([
                 'sale.id_pesanan',
@@ -50,9 +62,11 @@ class SalesController extends Controller
             'products' => $products,
             'sales' => $sales,
             'search' => $filters['q'] ?? '',
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'productCount' => Product::query()->count(),
-            'salesCount' => DB::table('tr_pesanan')->where('status', 'Selesai')->count(),
-            'salesTotal' => (int) DB::table('tr_pesanan')->where('status', 'Selesai')->sum('total'),
+            'salesCount' => (clone $filteredSales)->count(),
+            'salesTotal' => (int) $filteredSales->sum('total'),
         ]);
     }
 
