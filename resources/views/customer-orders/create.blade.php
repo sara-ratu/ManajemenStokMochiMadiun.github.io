@@ -65,20 +65,24 @@
                             <b>Rp{{ number_format((int) $product->harga, 0, ',', '.') }}</b>
                             <small>{{ number_format(max((int) $product->stok, 0), 0, ',', '.') }} tersedia</small>
                         </div>
-                        <label class="customer-order-quantity">
-                            <span>Jumlah</span>
-                            <input
-                                type="number"
-                                min="0"
-                                max="{{ min(max((int) $product->stok, 0), 100) }}"
-                                value="0"
-                                inputmode="numeric"
-                                data-customer-product-quantity
-                                data-product-id="{{ $product->id_produk }}"
-                                data-product-name="{{ $product->nama_produk ?: 'Produk tanpa nama' }}"
-                                data-product-price="{{ (int) $product->harga }}"
-                            >
-                        </label>
+                        <div class="customer-order-quantity" data-qty-control>
+    <button type="button" class="customer-order-add" data-qty-add>+ Tambah</button>
+    <div class="customer-order-stepper" hidden>
+        <button type="button" data-qty-minus aria-label="Kurangi">−</button>
+        <input
+            type="number"
+            min="0"
+            max="{{ min(max((int) $product->stok, 0), 100) }}"
+            value="0"
+            inputmode="numeric"
+            data-customer-product-quantity
+            data-product-id="{{ $product->id_produk }}"
+            data-product-name="{{ $product->nama_produk ?: 'Produk tanpa nama' }}"
+            data-product-price="{{ (int) $product->harga }}"
+        >
+        <button type="button" data-qty-plus aria-label="Tambah">+</button>
+    </div>
+</div>
                     </article>
                 @empty
                     <div class="customer-order-empty">
@@ -126,6 +130,35 @@
                 });
             });
             input.addEventListener('input', applyFilter);
+
+            document.querySelectorAll('[data-qty-control]').forEach(function (box) {
+    const addBtn = box.querySelector('[data-qty-add]');
+    const stepper = box.querySelector('.customer-order-stepper');
+    const input = box.querySelector('input');
+    const minus = box.querySelector('[data-qty-minus]');
+    const plus = box.querySelector('[data-qty-plus]');
+    const max = parseInt(input.max, 10) || 0;
+
+    function sync() {
+        const qty = parseInt(input.value, 10) || 0;
+        addBtn.hidden = qty > 0;
+        stepper.hidden = qty === 0;
+        plus.disabled = qty >= max;
+    }
+
+    function setQty(value) {
+        input.value = Math.min(Math.max(value, 0), max);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        sync();
+    }
+
+    addBtn.addEventListener('click', function () { setQty(1); });
+    minus.addEventListener('click', function () { setQty((parseInt(input.value, 10) || 0) - 1); });
+    plus.addEventListener('click', function () { setQty((parseInt(input.value, 10) || 0) + 1); });
+    input.addEventListener('change', function () { setQty(parseInt(input.value, 10) || 0); });
+});
+
         })();
     </script>
 </body>
