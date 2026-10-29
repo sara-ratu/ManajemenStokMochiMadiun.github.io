@@ -258,6 +258,38 @@ class ProductTest extends TestCase
         $this->assertDatabaseCount('ms_kategori', 1);
     }
 
+    public function test_unused_category_can_be_deleted(): void
+    {
+        $this->signIn();
+        $this->createCategory(1, 'Mochi Premium');
+
+        $this->get('/produk')
+            ->assertOk()
+            ->assertSee('Hapus kategori Mochi Premium')
+            ->assertSee('data-confirm-delete-title="Hapus Kategori?"', false)
+            ->assertSee('name="_method" value="DELETE"', false);
+
+        $this->delete('/kategori/1')
+            ->assertRedirect('/produk')
+            ->assertSessionHas('status', 'Kategori berhasil dihapus.');
+
+        $this->assertDatabaseMissing('ms_kategori', ['id_kategori' => 1]);
+    }
+
+    public function test_category_used_by_a_product_cannot_be_deleted(): void
+    {
+        $this->signIn();
+        $this->createCategory(1, 'Mochi Premium');
+        $this->createProduct(1, 1, 'Mochi Matcha', 18000, 4);
+
+        $this->delete('/kategori/1')
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Kategori masih digunakan oleh produk sehingga tidak dapat dihapus.');
+
+        $this->assertDatabaseHas('ms_kategori', ['id_kategori' => 1]);
+        $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'id_kategori' => 1]);
+    }
+
     public function test_invalid_product_image_url_returns_to_catalog_with_dialog_errors(): void
     {
         $this->signIn();
@@ -293,10 +325,12 @@ class ProductTest extends TestCase
     public function test_cashier_cannot_manage_products(): void
     {
         $this->signIn('Kasir');
+        $this->createCategory(1, 'Mochi Klasik');
 
         $this->get('/produk')->assertForbidden();
         $this->get('/produk/tambah')->assertForbidden();
         $this->post('/kategori', ['nama_kategori' => 'Kategori Ilegal'])->assertForbidden();
+        $this->delete('/kategori/1')->assertForbidden();
         $this->post('/produk', [
             'nama_produk' => 'Produk Ilegal',
             'harga' => 1000,

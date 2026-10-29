@@ -97,6 +97,17 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('status', 'Kategori berhasil ditambahkan. Sekarang pilih kategori itu saat menambahkan produk.');
     }
 
+    public function destroyCategory(Category $category): RedirectResponse
+    {
+        if ($category->products()->exists()) {
+            return back()->with('error', 'Kategori masih digunakan oleh produk sehingga tidak dapat dihapus.');
+        }
+
+        $category->delete();
+
+        return redirect()->route('products.index')->with('status', 'Kategori berhasil dihapus.');
+    }
+
     public function edit(Product $product): View
     {
         $product->load('category');

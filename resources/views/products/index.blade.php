@@ -124,14 +124,21 @@
                             Semua
                         </a>
                         @foreach ($categories as $category)
-                            <a
-                                class="category-pill category-pill-tone-{{ $loop->iteration % 5 }} {{ (string) $selectedCategory === (string) $category->id_kategori ? 'category-pill-active' : '' }}"
-                                href="{{ route('products.index', array_filter(['q' => $search, 'kategori' => $category->id_kategori], fn ($value) => $value !== null && $value !== '')) }}"
-                                @if ((string) $selectedCategory === (string) $category->id_kategori) aria-current="page" @endif
-                            >
-                                <span class="category-pill-dot" aria-hidden="true"></span>
-                                {{ $category->nama_kategori ?: 'Tanpa nama' }}
-                            </a>
+                            <div class="category-pill-item">
+                                <a
+                                    class="category-pill category-pill-tone-{{ $loop->iteration % 5 }} {{ (string) $selectedCategory === (string) $category->id_kategori ? 'category-pill-active' : '' }}"
+                                    href="{{ route('products.index', array_filter(['q' => $search, 'kategori' => $category->id_kategori], fn ($value) => $value !== null && $value !== '')) }}"
+                                    @if ((string) $selectedCategory === (string) $category->id_kategori) aria-current="page" @endif
+                                >
+                                    <span class="category-pill-dot" aria-hidden="true"></span>
+                                    {{ $category->nama_kategori ?: 'Tanpa nama' }}
+                                </a>
+                                <form action="{{ route('categories.destroy', $category) }}" method="POST" data-confirm-delete data-confirm-delete-title="Hapus Kategori?" data-confirm-delete-message="Yakin ingin menghapus kategori {{ $category->nama_kategori ?: 'Tanpa nama' }}? Kategori yang masih digunakan produk tidak dapat dihapus.">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="category-delete-button" type="submit" aria-label="Hapus kategori {{ $category->nama_kategori ?: 'Tanpa nama' }}" title="Hapus kategori">&times;</button>
+                                </form>
+                            </div>
                         @endforeach
                     </nav>
                 </section>

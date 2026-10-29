@@ -388,6 +388,34 @@ body.login-page {
     scrollbar-width: thin;
 }
 
+.category-pill-item {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+}
+
+.category-delete-button {
+    display: grid;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border: 1px solid #f3d9df;
+    border-radius: 50%;
+    background: #fff;
+    color: #a64e64;
+    cursor: pointer;
+    font: inherit;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.category-delete-button:hover {
+    border-color: #e87991;
+    background: #fff0f3;
+    color: #a92f4d;
+}
+
 .category-pill {
     display: inline-flex;
     min-width: 104px;
