@@ -215,6 +215,10 @@ document.querySelectorAll('[data-delete-dialog]').forEach((dialog) => {
 
     let pendingForm = null;
     const confirmButton = dialog.querySelector('[data-confirm-delete-action]');
+    const title = dialog.querySelector('#delete-confirm-title');
+    const message = dialog.querySelector('#delete-confirm-message');
+    const defaultTitle = title?.textContent ?? '';
+    const defaultMessage = message?.textContent ?? '';
 
     dialog.addEventListener('click', (event) => {
         if (event.target === dialog) {
@@ -235,6 +239,12 @@ document.querySelectorAll('[data-delete-dialog]').forEach((dialog) => {
             if (form.dataset.confirmed !== 'true') {
                 event.preventDefault();
                 pendingForm = form;
+                if (title) {
+                    title.textContent = form.dataset.confirmDeleteTitle || defaultTitle;
+                }
+                if (message) {
+                    message.textContent = form.dataset.confirmDeleteMessage || defaultMessage;
+                }
                 dialog.showModal();
             } else {
                 delete form.dataset.confirmed;
