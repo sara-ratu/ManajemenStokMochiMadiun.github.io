@@ -105,6 +105,7 @@ class SalesTest extends TestCase
 
         $this->get('/transaksi')
             ->assertOk()
+            ->assertSeeInOrder(['Beranda', 'Transaksi'])
             ->assertSee('Transaksi Penjualan')
             ->assertSee('Pilih Produk')
             ->assertSee('Mochi Stroberi')
@@ -123,6 +124,7 @@ class SalesTest extends TestCase
 
         $this->get('/transaksi')
             ->assertOk()
+            ->assertSeeInOrder(['Beranda', 'Transaksi'])
             ->assertSee('Laporan Penjualan')
             ->assertSee('Riwayat Transaksi')
             ->assertSee('sales-history-count', false)
