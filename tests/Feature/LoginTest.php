@@ -38,12 +38,12 @@ class LoginTest extends TestCase
         $this->get('/login')->assertOk()->assertSee('Masuk');
     }
 
-    public function test_user_can_login_with_email_and_password(): void
+    public function test_user_can_login_with_username_and_password(): void
     {
         $user = $this->createActiveUser();
 
         $this->post('/login', [
-            'email' => $user->email,
+            'username' => $user->nama_lengkap,
             'password' => 'secret-password',
         ])->assertRedirect('/dashboard');
 
@@ -96,9 +96,9 @@ class LoginTest extends TestCase
         $this->createActiveUser();
 
         $this->from('/login')->post('/login', [
-            'email' => 'admin@example.com',
+            'username' => 'Unknown User',
             'password' => 'wrong-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('email');
+        ])->assertRedirect('/login')->assertSessionHasErrors('username');
 
         $this->assertGuest();
     }
@@ -110,7 +110,7 @@ class LoginTest extends TestCase
         $this->from('/login')->post('/login', [
             'username' => $user->nama_lengkap,
             'password' => 'secret-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('email');
+        ])->assertRedirect('/login')->assertSessionHasErrors('username');
 
         $this->assertGuest();
     }
