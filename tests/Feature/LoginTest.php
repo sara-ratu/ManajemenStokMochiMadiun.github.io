@@ -55,16 +55,16 @@ class LoginTest extends TestCase
         $this->get('/')->assertRedirect('/dashboard');
     }
 
-    public function test_user_cannot_login_with_email(): void
+    public function test_super_admin_can_login_with_email_and_password(): void
     {
         $user = $this->createActiveUser();
 
-        $this->from('/login')->post('/login', [
+        $this->post('/login', [
             'username' => $user->email,
             'password' => 'secret-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('username');
+        ])->assertRedirect('/dashboard');
 
-        $this->assertGuest();
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_cashier_can_login_with_name_and_password(): void
@@ -79,16 +79,16 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_cashier_cannot_login_with_email(): void
+    public function test_cashier_can_login_with_email_and_password(): void
     {
         $user = $this->createActiveUser(['role' => 'Kasir']);
 
-        $this->from('/login')->post('/login', [
+        $this->post('/login', [
             'username' => $user->email,
             'password' => 'secret-password',
-        ])->assertRedirect('/login')->assertSessionHasErrors('username');
+        ])->assertRedirect('/dashboard');
 
-        $this->assertGuest();
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_invalid_credentials_return_to_login_with_an_error(): void

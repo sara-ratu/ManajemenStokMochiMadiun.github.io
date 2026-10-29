@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
             [
                 'nama_lengkap' => 'Mochi Madiun',
                 'email'        => 'admin@mochi.test',
-                'password'     => Hash::make('secret-passsword'),
+                'password'     => Hash::make('secret-password'),
                 'status'       => 'Aktif',
                 'role'         => 'SuperAdmin',
                 'created_at'   => now(),
