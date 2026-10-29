@@ -38,10 +38,10 @@
                         autocomplete="username"
                         required
                         autofocus
-                        @error('email') aria-describedby="email-error" @enderror
+                        aria-describedby="{{ $errors->has('username') ? 'username-error' : '' }}"
                     >
-                    @error('email')
-                        <p class="field-error" id="email-error">{{ $message }}</p>
+                    @error('username')
+                        <p class="field-error" id="username-error">{{ $message }}</p>
                     @enderror
                 </div>
 

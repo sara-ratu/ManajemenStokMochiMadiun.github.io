@@ -28,19 +28,18 @@ class LoginController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
+            'username.required' => 'Nama pengguna wajib diisi.',
             'password.required' => 'Password wajib diisi.',
         ]);
 
-        $key = Str::transliterate(Str::lower($credentials['email']).'|'.$request->ip());
+        $key = Str::transliterate(Str::lower($credentials['username']).'|'.$request->ip());
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             throw ValidationException::withMessages([
-                'email' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam '.RateLimiter::availableIn($key).' detik.',
+                'username' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam '.RateLimiter::availableIn($key).' detik.',
             ]);
         }
 
@@ -53,12 +52,13 @@ class LoginController extends Controller
             RateLimiter::hit($key, 60);
 
             throw ValidationException::withMessages([
-                'email' => 'Email atau password tidak sesuai.',
+                'username' => 'Nama pengguna atau password tidak sesuai.',
             ]);
         }
 
         RateLimiter::clear($key);
         $request->session()->regenerate();
+        Auth::login($user);
 
         $loginSession = LoginSession::query()->create([
             'nama_user' => $user->nama_lengkap,
