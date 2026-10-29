@@ -10,7 +10,7 @@
 <body class="login-page">
     <main class="login-card">
         <header class="login-brand">
-            <img class="login-brand-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="Logo MOCHI MADIUN — Kualitas Premium, sejak 2019">
+            <img class="login-brand-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="Logo MOCHI MADIUN — Kualitas Premium, sejak 2019">
         </header>
 
         @auth
