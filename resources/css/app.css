@@ -4935,7 +4935,7 @@ body.login-page {
 .dashboard-topbar {
     min-height: 68px;
     gap: 22px;
-    padding: 8px 20px;
+    padding: 8px 24px 8px 32px;
 }
 
 .dashboard-topbar .catalog-brand {
@@ -4955,7 +4955,8 @@ body.login-page {
 }
 
 .dashboard-search {
-    width: min(360px, 36vw);
+    width: 100%;
+    max-width: 340px;
     margin-left: auto;
 }
 
@@ -5415,9 +5416,9 @@ body.login-page {
 }
 
 @media (max-width: 760px) {
-    .dashboard-topbar { flex-wrap: wrap; gap: 8px 12px; padding: 8px 12px; }
+    .dashboard-topbar { flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px; }
     .dashboard-topbar .catalog-brand { flex-basis: auto; font-size: 16px; }
-    .dashboard-search { order: 3; width: 100%; }
+    .dashboard-search { order: 3; width: 100%; max-width: none; }
     .dashboard-user { margin-left: auto; }
     .dashboard-user strong { max-width: 120px; }
     .dashboard-logout { display: none; }
