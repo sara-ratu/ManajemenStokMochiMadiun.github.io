@@ -131,13 +131,30 @@ class EmployeeTest extends TestCase
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '16:00:00',
         ]);
+        Schema::getConnection()->table('ms_shift')->insert([
+            [
+                'id_shift' => 2,
+                'nama_shift' => 'Siang',
+                'jam_mulai' => null,
+                'jam_selesai' => null,
+            ],
+            [
+                'id_shift' => 3,
+                'nama_shift' => 'Oncalling',
+                'jam_mulai' => null,
+                'jam_selesai' => null,
+            ],
+        ]);
 
         $this->actingAs($admin)
             ->get('/karyawan/tambah')
             ->assertOk()
             ->assertSee('Tambah Karyawan')
             ->assertSee('Kasir')
-            ->assertSee('Nama pengguna');
+            ->assertSee('Nama pengguna')
+            ->assertSee('Pagi')
+            ->assertSee('Siang')
+            ->assertSee('Oncalling');
 
         $this->actingAs($admin)
             ->post('/karyawan', [
@@ -145,7 +162,7 @@ class EmployeeTest extends TestCase
                 'email' => 'kasir-baru@example.com',
                 'no_telepon' => '08123456789',
                 'alamat' => 'Jalan Mochi',
-                'id_shift' => 1,
+                'id_shift' => 3,
                 'status' => 'Aktif',
                 'password' => 'password-baru',
             ])
@@ -154,7 +171,7 @@ class EmployeeTest extends TestCase
         $employee = User::query()->where('email', 'kasir-baru@example.com')->firstOrFail();
         $this->assertSame(2, $employee->id_user);
         $this->assertSame('Kasir', $employee->role);
-        $this->assertSame(1, $employee->id_shift);
+        $this->assertSame(3, $employee->id_shift);
         $this->assertTrue(Hash::check('password-baru', $employee->password));
     }
 
