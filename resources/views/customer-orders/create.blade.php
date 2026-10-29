@@ -43,71 +43,86 @@
 
         <form action="{{ route('customer-orders.store') }}" method="POST" data-customer-order-form>
             @csrf
-            <section class="customer-order-products" aria-label="Daftar produk">
-                @forelse ($products as $product)
-                    <article class="customer-order-product"
-                        data-category="{{ $product->id_kategori }}"
-                        data-search="{{ \Illuminate\Support\Str::lower($product->nama_produk.' '.$product->category?->nama_kategori) }}">
-                        <div class="customer-order-product-image">
-                            @if ($product->gambar)
-                                <img
-                                    src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}"
-                                    alt="{{ $product->nama_produk ?: 'Produk mochi' }}"
-                                    loading="lazy"
-                                >
-                            @else
-                                <span aria-hidden="true">🍡</span>
-                            @endif
+            <div class="customer-order-layout">
+                <section class="customer-order-products" aria-label="Daftar produk">
+                    @forelse ($products as $product)
+                        <article class="customer-order-product"
+                            data-category="{{ $product->id_kategori }}"
+                            data-search="{{ \Illuminate\Support\Str::lower($product->nama_produk.' '.$product->category?->nama_kategori) }}">
+                            <div class="customer-order-product-image">
+                                @if ($product->gambar)
+                                    <img
+                                        src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}"
+                                        alt="{{ $product->nama_produk ?: 'Produk mochi' }}"
+                                        loading="lazy"
+                                    >
+                                @else
+                                    <span aria-hidden="true">🍡</span>
+                                @endif
+                            </div>
+                            <div class="customer-order-product-info">
+                                <span>{{ $product->category?->nama_kategori ?: 'Mochi Madiun' }}</span>
+                                <strong>{{ $product->nama_produk ?: 'Produk tanpa nama' }}</strong>
+                                <b>Rp{{ number_format((int) $product->harga, 0, ',', '.') }}</b>
+                                <small>{{ number_format(max((int) $product->stok, 0), 0, ',', '.') }} tersedia</small>
+                            </div>
+                            <div class="customer-order-quantity" data-qty-control>
+                                <button type="button" class="customer-order-add" data-qty-add>+ Tambah</button>
+                                <div class="customer-order-stepper" hidden>
+                                    <button type="button" data-qty-minus aria-label="Kurangi">−</button>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="{{ min(max((int) $product->stok, 0), 100) }}"
+                                        value="0"
+                                        inputmode="numeric"
+                                        data-customer-product-quantity
+                                        data-product-id="{{ $product->id_produk }}"
+                                        data-product-name="{{ $product->nama_produk ?: 'Produk tanpa nama' }}"
+                                        data-product-price="{{ (int) $product->harga }}"
+                                    >
+                                    <button type="button" data-qty-plus aria-label="Tambah">+</button>
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="customer-order-empty">
+                            <span aria-hidden="true">🍡</span>
+                            <strong>Produk belum tersedia</strong>
+                            <p>Silakan coba kembali beberapa saat lagi.</p>
                         </div>
-                        <div class="customer-order-product-info">
-                            <span>{{ $product->category?->nama_kategori ?: 'Mochi Madiun' }}</span>
-                            <strong>{{ $product->nama_produk ?: 'Produk tanpa nama' }}</strong>
-                            <b>Rp{{ number_format((int) $product->harga, 0, ',', '.') }}</b>
-                            <small>{{ number_format(max((int) $product->stok, 0), 0, ',', '.') }} tersedia</small>
-                        </div>
-                        <label class="customer-order-quantity">
-                            <span>Jumlah</span>
-                            <input
-                                type="number"
-                                min="0"
-                                max="{{ min(max((int) $product->stok, 0), 100) }}"
-                                value="0"
-                                inputmode="numeric"
-                                data-customer-product-quantity
-                                data-product-id="{{ $product->id_produk }}"
-                                data-product-name="{{ $product->nama_produk ?: 'Produk tanpa nama' }}"
-                                data-product-price="{{ (int) $product->harga }}"
-                            >
-                        </label>
-                    </article>
-                @empty
-                    <div class="customer-order-empty">
-                        <span aria-hidden="true">🍡</span>
-                        <strong>Produk belum tersedia</strong>
-                        <p>Silakan coba kembali beberapa saat lagi.</p>
-                    </div>
-                @endforelse
-            </section>
+                    @endforelse
+                </section>
 
-            <section class="customer-order-submit-card">
-                <div class="customer-order-total"><span>Perkiraan total</span><strong data-customer-order-total>Rp0</strong></div>
-                <div data-customer-order-items></div>
-                <button class="sales-checkout-button" type="submit" data-customer-order-submit disabled>Kirim Pesanan ke Kasir</button>
-                <p class="sales-checkout-hint">Stok belum dipotong. Simpan tautan nomor pesanan untuk memantau statusnya.</p>
-            </section>
+                <aside class="customer-order-cart" aria-label="Keranjang pesanan">
+                    <div class="customer-order-cart-heading">
+                        <h2>Keranjang</h2>
+                        <span><span data-cart-count>0</span> item</span>
+                    </div>
+                    <div class="customer-order-cart-list" data-cart-list></div>
+
+                    <section class="customer-order-submit-card">
+                        <div class="customer-order-total"><span>Perkiraan total</span><strong data-customer-order-total>Rp0</strong></div>
+                        <div data-customer-order-items></div>
+                        <button class="sales-checkout-button" type="submit" data-customer-order-submit disabled>Kirim Pesanan ke Kasir</button>
+                        <p class="sales-checkout-hint">Stok belum dipotong. Simpan tautan nomor pesanan untuk memantau statusnya.</p>
+                    </section>
+                </aside>
+            </div>
         </form>
     </main>
 
     <script>
         (function () {
-            const input = document.getElementById('customer-product-search');
+            // Filter kategori + pencarian
+            const searchInput = document.getElementById('customer-product-search');
             const emptyNotice = document.getElementById('customer-search-empty');
             const cards = document.querySelectorAll('.customer-order-product');
             const tabs = document.querySelectorAll('[data-category-tab]');
             let activeCategory = '';
 
             function applyFilter() {
-                const keyword = input.value.trim().toLowerCase();
+                const keyword = searchInput.value.trim().toLowerCase();
                 let visible = 0;
                 cards.forEach(function (card) {
                     const matchCategory = activeCategory === '' || card.dataset.category === activeCategory;
@@ -125,7 +140,104 @@
                     applyFilter();
                 });
             });
-            input.addEventListener('input', applyFilter);
+            searchInput.addEventListener('input', applyFilter);
+
+            // Tombol + Tambah dan stepper jumlah
+            document.querySelectorAll('[data-qty-control]').forEach(function (box) {
+                const addBtn = box.querySelector('[data-qty-add]');
+                const stepper = box.querySelector('.customer-order-stepper');
+                const qtyInput = box.querySelector('input');
+                const minus = box.querySelector('[data-qty-minus]');
+                const plus = box.querySelector('[data-qty-plus]');
+                const max = parseInt(qtyInput.max, 10) || 0;
+
+                function sync() {
+                    const qty = parseInt(qtyInput.value, 10) || 0;
+                    addBtn.hidden = qty > 0;
+                    stepper.hidden = qty === 0;
+                    plus.disabled = qty >= max;
+                }
+
+                function setQty(value) {
+                    qtyInput.value = Math.min(Math.max(value, 0), max);
+                    qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                addBtn.addEventListener('click', function () { setQty(1); });
+                minus.addEventListener('click', function () { setQty((parseInt(qtyInput.value, 10) || 0) - 1); });
+                plus.addEventListener('click', function () { setQty((parseInt(qtyInput.value, 10) || 0) + 1); });
+
+                // Saat diketik manual: rapikan angka, tanpa memicu change lagi
+                qtyInput.addEventListener('change', function () {
+                    const raw = parseInt(qtyInput.value, 10) || 0;
+                    const qty = Math.min(Math.max(raw, 0), max);
+                    if (String(qty) !== qtyInput.value) {
+                        qtyInput.value = qty;
+                        qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    sync();
+                });
+                sync();
+            });
+
+            // Keranjang di samping
+            const orderForm = document.querySelector('[data-customer-order-form]');
+            const cartList = document.querySelector('[data-cart-list]');
+            const cartCount = document.querySelector('[data-cart-count]');
+            const qtyInputs = Array.from(document.querySelectorAll('[data-customer-product-quantity]'));
+
+            function rupiah(n) { return 'Rp' + n.toLocaleString('id-ID'); }
+
+            function renderCart() {
+                cartList.replaceChildren();
+                let count = 0;
+
+                qtyInputs.forEach(function (qtyInput) {
+                    const qty = parseInt(qtyInput.value, 10) || 0;
+                    if (qty <= 0) return;
+                    count += qty;
+                    const price = parseInt(qtyInput.dataset.productPrice, 10) || 0;
+
+                    const row = document.createElement('div');
+                    row.className = 'customer-order-cart-row';
+
+                    const info = document.createElement('div');
+                    const name = document.createElement('strong');
+                    name.textContent = qtyInput.dataset.productName;
+                    const detail = document.createElement('span');
+                    detail.textContent = qty + ' × ' + rupiah(price);
+                    info.append(name, detail);
+
+                    const subtotal = document.createElement('b');
+                    subtotal.textContent = rupiah(qty * price);
+
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.textContent = '×';
+                    remove.setAttribute('aria-label', 'Hapus ' + qtyInput.dataset.productName);
+                    remove.addEventListener('click', function () {
+                        qtyInput.value = 0;
+                        qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+
+                    row.append(info, subtotal, remove);
+                    cartList.append(row);
+                });
+
+                if (count === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'customer-order-cart-empty';
+                    empty.textContent = 'Keranjang masih kosong. Tekan + Tambah pada produk.';
+                    cartList.append(empty);
+                }
+                cartCount.textContent = count;
+            }
+
+            orderForm.addEventListener('input', renderCart);
+            orderForm.addEventListener('change', renderCart);
+            renderCart();
         })();
     </script>
 </body>
