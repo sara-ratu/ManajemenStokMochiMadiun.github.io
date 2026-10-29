@@ -98,7 +98,7 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Administrator')
             ->assertSee('Karyawan')
-            ->assertSee('Laporan')
+            ->assertSeeInOrder(['Beranda', 'Transaksi'])
             ->assertSee('Grafik Penjualan')
             ->assertSee('Pendapatan')
             ->assertSee('Tunai')

@@ -59,7 +59,7 @@
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>{{ $isCashier ? 'Penjualan' : 'Laporan' }}</span>
+                    <span>Transaksi</span>
                 </a>
                 @can('cashier')
                     <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">

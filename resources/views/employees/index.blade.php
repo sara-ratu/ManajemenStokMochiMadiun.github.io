@@ -28,6 +28,10 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
                     <span>Beranda</span>
                 </a>
+                <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
+                    <span>Transaksi</span>
+                </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('employees.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
                     <span>Data Karyawan</span>
@@ -35,10 +39,6 @@
                 <a class="sidebar-nav-link" href="{{ route('products.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 12v9"/></svg>
                     <span>Produk</span>
-                </a>
-                <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Laporan Penjualan</span>
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('profile.show') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
