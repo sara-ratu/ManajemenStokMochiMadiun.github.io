@@ -194,7 +194,7 @@
                                             <div class="catalog-product-image">
                                                 @if ($product->gambar)
                                                     <img
-                                                        src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}"
+                                                        src="{{ $product->gambar_url }}"
                                                         alt="{{ $product->nama_produk ?: 'Produk mochi' }}"
                                                         loading="lazy"
                                                     >
@@ -426,7 +426,7 @@
                             <input id="edit-gambar-{{ $product->id_produk }}" name="gambar" type="file" accept="image/*">
                             @if ($product->gambar)
                                 <div class="dialog-current-product-image">
-                                    <img src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}" alt="Foto {{ $product->nama_produk }}">
+                                    <img src="{{ $product->gambar_url }}" alt="Foto {{ $product->nama_produk }}">
                                     <label><input type="checkbox" name="hapus_gambar" value="1" @checked((string) old('edit_product_id') === (string) $product->id_produk && old('hapus_gambar'))> Hapus foto saat disimpan</label>
                                 </div>
                             @endif

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shift;
+use App\Models\ShiftChangeRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,15 @@ class EmployeeController extends Controller
 
         return view('employees.index', [
             'employees' => $employees,
+            'pendingShiftRequests' => ShiftChangeRequest::query()
+                ->with(['user.shift', 'shift'])
+                ->where('status', ShiftChangeRequest::STATUS_PENDING)
+                ->latest('id_pengajuan')
+                ->paginate(10, ['*'], 'shift_request_page')
+                ->withQueryString(),
+            'pendingShiftRequestCount' => ShiftChangeRequest::query()
+                ->where('status', ShiftChangeRequest::STATUS_PENDING)
+                ->count(),
             'search' => $filters['q'] ?? '',
             'employeeCount' => User::query()->count(),
             'activeEmployeeCount' => User::query()->where('status', 'Aktif')->count(),
@@ -117,7 +127,12 @@ class EmployeeController extends Controller
             }
         }
 
-        $user->delete();
+        DB::transaction(function () use ($user): void {
+            $user->shiftChangeRequests()
+                ->where('status', ShiftChangeRequest::STATUS_PENDING)
+                ->delete();
+            $user->delete();
+        });
 
         return redirect()->route('employees.index')->with('status', 'Akun karyawan berhasil dihapus.');
     }

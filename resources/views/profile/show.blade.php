@@ -62,7 +62,7 @@
 
         <div class="products-workspace">
             <header class="products-topbar">
-                <div class="topbar-page-label">{{ $isCashier ? 'Profil Kasir' : 'Profil Saya' }}</div>
+                <div class="topbar-page-label">Profil Saya</div>
                 <div class="products-account">
                     <span class="account-greeting">Halo, <strong>{{ $user->nama_lengkap ?: 'Pengguna' }}</strong></span>
                     <form action="{{ route('logout') }}" method="POST">
@@ -73,47 +73,27 @@
             </header>
 
     <main class="products-main profile-main">
-        @unless ($isCashier)
-            <a class="profile-back-link" href="{{ route('dashboard') }}">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-                Kembali ke produk
-            </a>
-        @endunless
+        <a class="profile-back-link" href="{{ route('dashboard') }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Kembali ke beranda
+        </a>
 
         <section class="profile-heading">
             <div>
-                <p class="products-eyebrow">{{ $isCashier ? 'AKUN KASIR' : 'AKUN SAYA' }}</p>
-                @unless ($isCashier)
-                    <h1>Profil Saya</h1>
-                @endunless
-                <p class="products-subtitle">{{ $isCashier ? 'Kelola informasi akun dan lihat jadwal kerja Anda.' : 'Perbarui informasi pribadi dan keamanan akun Anda.' }}</p>
+                <p class="products-eyebrow">AKUN SAYA</p>
+                <h1>Profil Saya</h1>
+                <p class="products-subtitle">Perbarui informasi pribadi dan keamanan akun Anda.</p>
             </div>
         </section>
 
         @if (session('status'))
             <div class="action-notice action-notice-success" role="status">{{ session('status') }}</div>
         @endif
+        @if (session('error'))
+            <div class="action-notice action-notice-error" role="alert">{{ session('error') }}</div>
+        @endif
         @if ($errors->any())
             <div class="action-notice action-notice-error" role="alert">Periksa kembali data yang Anda masukkan.</div>
-        @endif
-
-        @if ($isCashier)
-            <section class="cashier-profile-shift" aria-label="Ringkasan shift kasir">
-                <div class="cashier-profile-shift-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                </div>
-                <div class="cashier-profile-shift-copy">
-                    <p class="products-eyebrow">INFORMASI KERJA</p>
-                    <h2>Ringkasan shift Anda</h2>
-                    <p>
-                        {{ $user->shift?->nama_shift ?: 'Shift belum ditentukan' }}
-                        @if ($user->shift?->jam_mulai && $user->shift?->jam_selesai)
-                            · {{ \Illuminate\Support\Str::substr((string) $user->shift->jam_mulai, 0, 5) }}–{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_selesai, 0, 5) }}
-                        @endif
-                    </p>
-                </div>
-                <a class="cashier-profile-action" href="{{ route('sales.index') }}">Buka halaman kasir</a>
-            </section>
         @endif
 
         <section class="profile-layout" aria-label="Informasi profil pengguna">
@@ -174,6 +154,44 @@
                             <div><span>Jam shift</span><strong>{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_mulai, 0, 5) }}–{{ \Illuminate\Support\Str::substr((string) $user->shift->jam_selesai, 0, 5) }}</strong></div>
                         @endif
                     </div>
+
+                    @if ($user->role === 'Kasir')
+                        <section class="profile-shift-request" aria-label="Pengajuan perubahan shift">
+                            <div class="profile-password-heading">
+                                <h3>Pengajuan perubahan shift</h3>
+                                <p>Pengajuan akan diterapkan setelah disetujui administrator.</p>
+                            </div>
+                            @if ($latestShiftRequest?->status === \App\Models\ShiftChangeRequest::STATUS_PENDING)
+                                <div class="profile-shift-request-status" role="status">
+                                    Pengajuan shift {{ $latestShiftRequest->shift?->nama_shift ?: 'pilihan Anda' }} sedang menunggu persetujuan administrator.
+                                </div>
+                            @else
+                                @if ($latestShiftRequest)
+                                    <div class="profile-shift-request-status profile-shift-request-status-{{ $latestShiftRequest->status === \App\Models\ShiftChangeRequest::STATUS_APPROVED ? 'approved' : 'rejected' }}" role="status">
+                                        Pengajuan shift {{ $latestShiftRequest->shift?->nama_shift ?: 'sebelumnya' }} {{ $latestShiftRequest->status === \App\Models\ShiftChangeRequest::STATUS_APPROVED ? 'telah disetujui' : 'ditolak' }}.
+                                    </div>
+                                @endif
+                                <form class="profile-shift-request-form" action="{{ route('shift-requests.store') }}" method="POST">
+                                    @csrf
+                                    <div class="profile-form-field">
+                                        <label for="request_shift_id">Pilih shift yang diajukan</label>
+                                        <select id="request_shift_id" name="id_shift" required>
+                                            <option value="">Pilih shift</option>
+                                            @foreach ($requestableShifts as $shift)
+                                                <option value="{{ $shift->id_shift }}" @selected((string) old('id_shift') === (string) $shift->id_shift) @disabled((int) $user->id_shift === (int) $shift->id_shift)>
+                                                    {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}{{ (int) $user->id_shift === (int) $shift->id_shift ? ' (shift saat ini)' : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('id_shift')<span class="form-field-error">{{ $message }}</span>@enderror
+                                    </div>
+                                    <div class="profile-shift-request-footer">
+                                        <button class="filter-button" type="submit" @disabled($requestableShifts->every(fn ($shift) => (int) $shift->id_shift === (int) $user->id_shift))>Ajukan perubahan shift</button>
+                                    </div>
+                                </form>
+                            @endif
+                        </section>
+                    @endif
 
                     <div class="profile-password-heading">
                         <h3>Ganti password</h3>

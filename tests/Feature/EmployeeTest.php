@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\ShiftChangeRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -309,5 +310,172 @@ class EmployeeTest extends TestCase
         ]);
 
         $this->actingAs($cashier)->get('/karyawan')->assertForbidden();
+    }
+
+    public function test_cashier_can_request_shift_change_without_changing_current_shift(): void
+    {
+        Schema::getConnection()->table('ms_shift')->insert([
+            ['id_shift' => 1, 'nama_shift' => 'Pagi', 'jam_mulai' => '08:00:00', 'jam_selesai' => '16:00:00'],
+            ['id_shift' => 2, 'nama_shift' => 'Siang', 'jam_mulai' => '12:00:00', 'jam_selesai' => '20:00:00'],
+        ]);
+        $cashier = User::query()->create([
+            'id_user' => 1,
+            'id_shift' => 1,
+            'nama_lengkap' => 'Kasir Mochi',
+            'email' => 'kasir@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'Kasir',
+        ]);
+
+        $this->actingAs($cashier)
+            ->post('/pengajuan-shift', ['id_shift' => 2])
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseHas('tr_pengajuan_shift', [
+            'id_user' => 1,
+            'id_shift' => 2,
+            'status' => ShiftChangeRequest::STATUS_PENDING,
+        ]);
+        $this->assertSame(1, $cashier->fresh()->id_shift);
+
+        $this->get('/profil')
+            ->assertOk()
+            ->assertSee('sedang menunggu persetujuan administrator');
+    }
+
+    public function test_cashier_cannot_request_current_shift_or_an_unavailable_shift(): void
+    {
+        Schema::getConnection()->table('ms_shift')->insert([
+            ['id_shift' => 1, 'nama_shift' => 'Pagi', 'jam_mulai' => '08:00:00', 'jam_selesai' => '16:00:00'],
+            ['id_shift' => 2, 'nama_shift' => 'Siang', 'jam_mulai' => '12:00:00', 'jam_selesai' => '20:00:00'],
+            ['id_shift' => 3, 'nama_shift' => 'Oncalling', 'jam_mulai' => null, 'jam_selesai' => null],
+        ]);
+        $cashier = User::query()->create([
+            'id_user' => 1,
+            'id_shift' => 1,
+            'nama_lengkap' => 'Kasir Mochi',
+            'email' => 'kasir@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'Kasir',
+        ]);
+
+        $this->actingAs($cashier)
+            ->from('/profil')
+            ->post('/pengajuan-shift', ['id_shift' => 1])
+            ->assertRedirect('/profil')
+            ->assertSessionHas('error');
+
+        $this->actingAs($cashier)
+            ->from('/profil')
+            ->post('/pengajuan-shift', ['id_shift' => 3])
+            ->assertRedirect('/profil')
+            ->assertSessionHasErrors('id_shift');
+
+        $this->assertDatabaseCount('tr_pengajuan_shift', 0);
+    }
+
+    public function test_super_admin_can_approve_shift_request_and_notify_dashboard(): void
+    {
+        Schema::getConnection()->table('ms_shift')->insert([
+            ['id_shift' => 1, 'nama_shift' => 'Pagi', 'jam_mulai' => '08:00:00', 'jam_selesai' => '16:00:00'],
+            ['id_shift' => 2, 'nama_shift' => 'Siang', 'jam_mulai' => '12:00:00', 'jam_selesai' => '20:00:00'],
+        ]);
+        $admin = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Admin Mochi',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+        $cashier = User::query()->create([
+            'id_user' => 2,
+            'id_shift' => 1,
+            'nama_lengkap' => 'Kasir Mochi',
+            'email' => 'kasir@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'Kasir',
+        ]);
+        $shiftRequest = ShiftChangeRequest::query()->create([
+            'id_user' => $cashier->id_user,
+            'id_shift' => 2,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/karyawan')
+            ->assertOk()
+            ->assertSee('Pengajuan Perubahan Shift')
+            ->assertSee('Kasir Mochi')
+            ->assertSee('Pagi')
+            ->assertSee('Siang')
+            ->assertSee('Setujui')
+            ->assertSee('Tolak');
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee('1 pengajuan shift menunggu persetujuan')
+            ->assertSee('data-pending-shift-count', false);
+
+        $this->get('/pengajuan-shift/notifikasi')
+            ->assertOk()
+            ->assertExactJson(['pending_count' => 1]);
+
+        $this->post("/pengajuan-shift/{$shiftRequest->id_pengajuan}/setujui")
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $this->assertSame(2, $cashier->fresh()->id_shift);
+        $this->assertDatabaseHas('tr_pengajuan_shift', [
+            'id_pengajuan' => $shiftRequest->id_pengajuan,
+            'status' => ShiftChangeRequest::STATUS_APPROVED,
+            'id_admin' => $admin->id_user,
+        ]);
+        $this->get('/pengajuan-shift/notifikasi')
+            ->assertExactJson(['pending_count' => 0]);
+    }
+
+    public function test_super_admin_can_reject_shift_request_without_changing_employee_shift(): void
+    {
+        Schema::getConnection()->table('ms_shift')->insert([
+            ['id_shift' => 1, 'nama_shift' => 'Pagi', 'jam_mulai' => '08:00:00', 'jam_selesai' => '16:00:00'],
+            ['id_shift' => 2, 'nama_shift' => 'Siang', 'jam_mulai' => '12:00:00', 'jam_selesai' => '20:00:00'],
+        ]);
+        $admin = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Admin Mochi',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+        $cashier = User::query()->create([
+            'id_user' => 2,
+            'id_shift' => 1,
+            'nama_lengkap' => 'Kasir Mochi',
+            'email' => 'kasir@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'Kasir',
+        ]);
+        $shiftRequest = ShiftChangeRequest::query()->create([
+            'id_user' => $cashier->id_user,
+            'id_shift' => 2,
+        ]);
+
+        $this->actingAs($admin)
+            ->post("/pengajuan-shift/{$shiftRequest->id_pengajuan}/tolak")
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $this->assertSame(1, $cashier->fresh()->id_shift);
+        $this->assertDatabaseHas('tr_pengajuan_shift', [
+            'id_pengajuan' => $shiftRequest->id_pengajuan,
+            'status' => ShiftChangeRequest::STATUS_REJECTED,
+            'id_admin' => $admin->id_user,
+        ]);
     }
 }

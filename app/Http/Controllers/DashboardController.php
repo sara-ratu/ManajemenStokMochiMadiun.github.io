@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ShiftChangeRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +117,9 @@ class DashboardController extends Controller
             'pendingOrderCount' => $isCashier
                 ? DB::table('tr_pesanan')->where('status', 'Pending')->count()
                 : null,
+            'pendingShiftRequestCount' => $request->user()->can('manage-employees')
+                ? ShiftChangeRequest::query()->where('status', ShiftChangeRequest::STATUS_PENDING)->count()
+                : 0,
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shift;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,9 +13,19 @@ class ProfileController extends Controller
     public function show(Request $request): View
     {
         $user = $request->user()->load('shift');
-        $isCashier = $user->role === 'Kasir';
+        $latestShiftRequest = $user->shiftChangeRequests()
+            ->with('shift')
+            ->latest('id_pengajuan')
+            ->first();
 
-        return view('profile.show', compact('user', 'isCashier'));
+        return view('profile.show', [
+            'user' => $user,
+            'latestShiftRequest' => $latestShiftRequest,
+            'requestableShifts' => Shift::query()
+                ->whereIn('nama_shift', ['Pagi', 'Siang'])
+                ->orderBy('nama_shift')
+                ->get(),
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
