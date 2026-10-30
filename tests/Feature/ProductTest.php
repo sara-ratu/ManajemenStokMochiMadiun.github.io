@@ -208,6 +208,23 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function test_uploaded_product_image_url_is_relative_to_the_current_host(): void
+    {
+        $this->signIn();
+        $product = Product::query()->create([
+            'id_produk' => 1,
+            'nama_produk' => 'Mochi Strawberry Choco',
+            'harga' => 8000,
+            'gambar' => 'products/mochi.jpg',
+        ]);
+
+        $this->get('/produk')
+            ->assertOk()
+            ->assertSee('src="/storage/products/mochi.jpg"', false);
+
+        $this->assertSame('/storage/products/mochi.jpg', $product->gambar_url);
+    }
+
     public function test_super_admin_can_create_category_and_use_it_for_product(): void
     {
         $this->signIn();

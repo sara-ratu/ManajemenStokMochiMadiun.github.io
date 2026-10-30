@@ -132,7 +132,7 @@
                                     <div class="sales-product-image">
                                         @if ($product->gambar)
                                             <img
-                                                src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}"
+                                                src="{{ $product->gambar_url }}"
                                                 alt="{{ $product->nama_produk ?: 'Produk mochi' }}"
                                                 loading="lazy"
                                             >

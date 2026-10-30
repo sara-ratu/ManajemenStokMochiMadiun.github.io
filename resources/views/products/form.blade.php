@@ -120,7 +120,7 @@
                         @error('gambar')<span class="form-field-error">{{ $message }}</span>@enderror
                         @if ($editing && $product->gambar)
                             <div class="current-product-image">
-                                <img src="{{ \Illuminate\Support\Str::startsWith($product->gambar, ['http://', 'https://']) ? $product->gambar : \Illuminate\Support\Facades\Storage::disk('public')->url($product->gambar) }}" alt="Foto {{ $product->nama_produk }}">
+                                <img src="{{ $product->gambar_url }}" alt="Foto {{ $product->nama_produk }}">
                                 <label><input type="checkbox" name="hapus_gambar" value="1" @checked(old('hapus_gambar'))> Hapus foto saat disimpan</label>
                             </div>
                         @endif

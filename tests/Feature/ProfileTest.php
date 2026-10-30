@@ -80,7 +80,7 @@ class ProfileTest extends TestCase
             ->assertDontSee('secret-password');
     }
 
-    public function test_cashier_can_view_cashier_profile_and_shift_summary(): void
+    public function test_cashier_profile_uses_shared_layout_and_shows_shift_details(): void
     {
         Schema::getConnection()->table('ms_shift')->insert([
             'id_shift' => 2,
@@ -102,17 +102,18 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->get('/profil')
             ->assertOk()
-            ->assertSee('Profil Kasir')
-            ->assertSee('AKUN KASIR')
-            ->assertSee('Kelola informasi akun dan lihat jadwal kerja Anda.')
-            ->assertSee('Ringkasan shift Anda')
+            ->assertSee('Profil Saya')
+            ->assertSee('AKUN SAYA')
+            ->assertSee('Perbarui informasi pribadi dan keamanan akun Anda.')
             ->assertSee('Sore')
             ->assertSee('16:00–22:00')
-            ->assertSee('Buka halaman kasir')
-            ->assertDontSee('Kembali ke kasir')
+            ->assertSee('Kembali ke beranda')
+            ->assertDontSee('Ringkasan shift Anda')
+            ->assertDontSee('Buka halaman kasir')
+            ->assertDontSee('Profil Kasir')
             ->assertDontSee('Kembali ke produk');
 
-        $this->assertSame(1, substr_count($response->getContent(), 'Profil Kasir'));
+        $this->assertSame(2, substr_count($response->getContent(), 'Profil Saya'));
     }
 
     public function test_user_can_update_personal_profile_without_changing_role_or_shift(): void

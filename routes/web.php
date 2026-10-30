@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ShiftChangeRequestController;
 use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/karyawan/{employee}/edit', [EmployeeController::class, 'edit'])->whereNumber('employee')->name('employees.edit');
         Route::put('/karyawan/{employee}', [EmployeeController::class, 'update'])->whereNumber('employee')->name('employees.update');
         Route::delete('/karyawan/{employee}', [EmployeeController::class, 'destroy'])->whereNumber('employee')->name('employees.destroy');
+        Route::get('/pengajuan-shift/notifikasi', [ShiftChangeRequestController::class, 'notifications'])
+            ->name('shift-requests.notifications');
+        Route::post('/pengajuan-shift/{shiftRequest}/setujui', [ShiftChangeRequestController::class, 'approve'])
+            ->whereNumber('shiftRequest')
+            ->name('shift-requests.approve');
+        Route::post('/pengajuan-shift/{shiftRequest}/tolak', [ShiftChangeRequestController::class, 'reject'])
+            ->whereNumber('shiftRequest')
+            ->name('shift-requests.reject');
     });
 
     Route::middleware('can:manage-products')->group(function () {
@@ -61,6 +70,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaksi', [SalesController::class, 'store'])
         ->middleware('can:cashier')
         ->name('sales.store');
+    Route::post('/pengajuan-shift', [ShiftChangeRequestController::class, 'store'])
+        ->middleware('can:cashier')
+        ->name('shift-requests.store');
 
     Route::middleware('can:cashier')->group(function () {
         Route::get('/order-pelanggan', [CustomerOrderController::class, 'cashierIndex'])

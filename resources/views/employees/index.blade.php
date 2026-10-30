@@ -68,6 +68,47 @@
                     <div class="action-notice action-notice-error" role="alert">{{ session('error') }}</div>
                 @endif
 
+                @if ($pendingShiftRequests->isNotEmpty())
+                    <section class="shift-request-card" aria-label="Pengajuan perubahan shift">
+                        <div class="stock-history-heading">
+                            <div>
+                                <h2>Pengajuan Perubahan Shift</h2>
+                                <p>{{ number_format($pendingShiftRequestCount, 0, ',', '.') }} permintaan menunggu persetujuan.</p>
+                            </div>
+                        </div>
+                        <div class="shift-request-list">
+                            @foreach ($pendingShiftRequests as $shiftRequest)
+                                <article class="shift-request-item">
+                                    <div class="shift-request-copy">
+                                        <strong>{{ $shiftRequest->user?->nama_lengkap ?: 'Karyawan tidak tersedia' }}</strong>
+                                        <span>
+                                            {{ $shiftRequest->user?->shift?->nama_shift ?: 'Belum ada shift' }}
+                                            <span aria-hidden="true">→</span>
+                                            {{ $shiftRequest->shift?->nama_shift ?: 'Shift tidak tersedia' }}
+                                        </span>
+                                        <small>Diajukan {{ $shiftRequest->created_at->locale('id')->translatedFormat('d F Y, H.i') }}</small>
+                                    </div>
+                                    @if ($shiftRequest->user && $shiftRequest->shift)
+                                        <div class="shift-request-actions">
+                                            <form action="{{ route('shift-requests.approve', $shiftRequest->id_pengajuan) }}" method="POST">
+                                                @csrf
+                                                <button class="filter-button" type="submit">Setujui</button>
+                                            </form>
+                                            <form action="{{ route('shift-requests.reject', $shiftRequest->id_pengajuan) }}" method="POST">
+                                                @csrf
+                                                <button class="shift-request-reject" type="submit">Tolak</button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                        @if ($pendingShiftRequests->hasPages())
+                            <div class="catalog-pagination">{{ $pendingShiftRequests->links() }}</div>
+                        @endif
+                    </section>
+                @endif
+
                 <section class="products-heading stock-heading">
                     <div>
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>

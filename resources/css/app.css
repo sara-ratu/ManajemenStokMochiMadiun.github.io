@@ -1748,81 +1748,6 @@ body.login-page {
     letter-spacing: -1px;
 }
 
-.cashier-profile-shift {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin: 0 0 20px;
-    padding: 17px 20px;
-    border: 1px solid #f4d8e0;
-    border-radius: 15px;
-    background: linear-gradient(110deg, #fff1f5, #fff 72%);
-}
-
-.cashier-profile-shift-icon {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 13px;
-    background: #fff;
-    color: #df4d70;
-}
-
-.cashier-profile-shift-icon svg {
-    width: 23px;
-    height: 23px;
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 1.8;
-}
-
-.cashier-profile-shift-copy {
-    min-width: 0;
-    flex: 1;
-}
-
-.cashier-profile-shift-copy .products-eyebrow {
-    margin-bottom: 3px;
-    font-size: 9px;
-}
-
-.cashier-profile-shift-copy h2 {
-    margin: 0;
-    color: #45383d;
-    font-size: 14px;
-}
-
-.cashier-profile-shift-copy > p:last-child {
-    margin: 4px 0 0;
-    color: #776970;
-    font-size: 12px;
-}
-
-.cashier-profile-action {
-    display: inline-flex;
-    min-height: 38px;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    padding: 0 13px;
-    border: 1px solid #ed5b7b;
-    border-radius: 9px;
-    background: #ed5b7b;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.cashier-profile-action:hover {
-    border-color: #d94063;
-    background: #d94063;
-}
-
 .profile-layout {
     display: grid;
     grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.6fr);
@@ -2102,6 +2027,184 @@ body.login-page {
     color: #887d81;
     font-size: 12px;
     font-weight: 400;
+}
+
+.profile-shift-request {
+    margin: 20px 0 22px;
+    padding: 0 15px 16px;
+    border: 1px solid #f4e8eb;
+    border-radius: 12px;
+    background: #fff9fb;
+}
+
+.profile-shift-request .profile-password-heading {
+    margin-bottom: 14px;
+    padding-top: 16px;
+    border-top: 0;
+}
+
+.profile-shift-request-status {
+    margin-bottom: 13px;
+    padding: 10px 12px;
+    border: 1px solid #f2dfb6;
+    border-radius: 9px;
+    background: #fff9e9;
+    color: #80621e;
+    font-size: 13px;
+}
+
+.profile-shift-request-status-approved {
+    border-color: #d6ebdc;
+    background: #f0faf3;
+    color: #398258;
+}
+
+.profile-shift-request-status-rejected {
+    border-color: #f2d5da;
+    background: #fff2f3;
+    color: #bd3e54;
+}
+
+.profile-shift-request-form {
+    display: grid;
+    gap: 16px;
+}
+
+.profile-shift-request-form .profile-form-field {
+    min-width: 0;
+}
+
+.profile-shift-request-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.profile-form-field select {
+    width: 100%;
+    min-height: 43px;
+    padding: 9px 12px;
+    border: 1px solid #e9dfe2;
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    color: #4f4549;
+    font: inherit;
+    font-size: 14px;
+}
+
+.profile-form-field select:focus {
+    border-color: #ed7792;
+    box-shadow: 0 0 0 3px rgb(255 69 110 / 10%);
+}
+
+.shift-request-card {
+    margin-bottom: 24px;
+    padding: 20px;
+    border: 1px solid #f0e3e6;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgb(112 71 82 / 5%);
+}
+
+.shift-request-card .stock-history-heading {
+    margin-bottom: 12px;
+}
+
+.shift-request-card .stock-history-heading h2 {
+    margin: 0;
+    color: #45383d;
+    font-size: 18px;
+}
+
+.shift-request-card .stock-history-heading p {
+    margin: 5px 0 0;
+    color: #887d81;
+    font-size: 13px;
+}
+
+.shift-request-list {
+    display: grid;
+}
+
+.shift-request-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 0;
+    border-top: 1px solid #f2eaec;
+}
+
+.shift-request-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.shift-request-copy strong {
+    color: #4b3d42;
+    font-size: 14px;
+}
+
+.shift-request-copy > span {
+    color: #6d6065;
+    font-size: 13px;
+}
+
+.shift-request-copy small {
+    color: #93858a;
+    font-size: 12px;
+}
+
+.shift-request-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.shift-request-actions form {
+    margin: 0;
+}
+
+.shift-request-actions .filter-button,
+.shift-request-reject {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+.shift-request-reject {
+    border: 1px solid #f2d5da;
+    border-radius: 9px;
+    background: #fff;
+    color: #bd3e54;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.shift-request-reject:hover {
+    background: #fff2f3;
+}
+
+@media (max-width: 680px) {
+    .profile-shift-request-form,
+    .shift-request-item {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .shift-request-actions,
+    .shift-request-actions form,
+    .shift-request-actions button {
+        width: 100%;
+    }
+
+    .profile-shift-request-footer .filter-button {
+        width: auto;
+    }
 }
 
 .product-form-main {
@@ -4310,18 +4413,6 @@ body.login-page {
         margin-bottom: 20px;
     }
 
-    .cashier-profile-shift {
-        display: grid;
-        grid-template-columns: 44px minmax(0, 1fr);
-        gap: 12px;
-        padding: 14px;
-    }
-
-    .cashier-profile-action {
-        grid-column: 1 / -1;
-        width: 100%;
-    }
-
     .profile-layout {
         grid-template-columns: 1fr;
         gap: 14px;
@@ -5028,6 +5119,23 @@ body.login-page {
     background: #e62244;
 }
 
+.dashboard-notification > .dashboard-notification-count {
+    display: grid;
+    width: auto;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    place-items: center;
+    border: 1px solid #fff;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.dashboard-notification-count[hidden] {
+    display: none;
+}
+
 .dashboard-logout {
     min-height: 34px;
     padding: 0 11px;
@@ -5418,7 +5526,12 @@ body.login-page {
 @media (max-width: 760px) {
     .dashboard-topbar { flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px; }
     .dashboard-topbar .catalog-brand { flex-basis: auto; font-size: 16px; }
-    .dashboard-search { order: 3; width: 100%; max-width: none; }
+    .dashboard-search { order: 3; width: 100%; max-width: none;     }
+
+    .dashboard-sidebar-count[hidden] {
+        display: none;
+    }
+
     .dashboard-user { margin-left: auto; }
     .dashboard-user strong { max-width: 120px; }
     .dashboard-logout { display: none; }

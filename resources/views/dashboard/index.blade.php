@@ -30,6 +30,17 @@
                     @if ($pendingOrderCount > 0)<span></span>@endif
                 </a>
             @else
+                @can('manage-employees')
+                    <a
+                        class="dashboard-notification dashboard-shift-notification"
+                        href="{{ route('employees.index') }}"
+                        aria-label="{{ $pendingShiftRequestCount }} pengajuan shift menunggu persetujuan"
+                        data-shift-request-notification="{{ route('shift-requests.notifications') }}"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>
+                        <span class="dashboard-notification-count" data-pending-shift-count @if ($pendingShiftRequestCount === 0) hidden @endif>{{ $pendingShiftRequestCount }}</span>
+                    </a>
+                @endcan
                 <span class="dashboard-user-avatar" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap ?: 'U', 0, 1)) }}</span>
             @endif
             <div>
@@ -80,6 +91,7 @@
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
                         <span>Karyawan</span>
+                        <span class="dashboard-sidebar-count" data-pending-shift-count @if ($pendingShiftRequestCount === 0) hidden @endif>{{ $pendingShiftRequestCount }}</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link" href="{{ route('profile.show') }}">

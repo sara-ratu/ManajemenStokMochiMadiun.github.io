@@ -31,6 +31,10 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang sama dan dapat dijangkau di jaringan. `127.0.0.1` hanya menunjuk ke perangkat yang sedang digunakan.
 
+## Gambar produk
+
+Setelah instalasi, jalankan `php artisan storage:link` agar gambar yang diunggah ke penyimpanan publik dapat diakses melalui `/storage`.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.

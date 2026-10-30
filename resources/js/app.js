@@ -414,3 +414,36 @@ document.querySelectorAll('[data-cashier-order-poll]').forEach((queue) => {
         pollOrders().catch((error) => console.error(error));
     }, 8000);
 });
+
+document.querySelectorAll('[data-shift-request-notification]').forEach((notification) => {
+    const notificationsUrl = notification.dataset.shiftRequestNotification;
+
+    if (!notificationsUrl || !(notification instanceof HTMLAnchorElement)) {
+        return;
+    }
+
+    const updateShiftRequestCount = async () => {
+        const response = await fetch(notificationsUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Pemeriksaan pengajuan shift gagal (${response.status}).`);
+        }
+
+        const result = await response.json();
+        const pendingCount = Number(result.pending_count);
+        if (!Number.isInteger(pendingCount) || pendingCount < 0) {
+            throw new Error('Jumlah pengajuan shift dari server tidak valid.');
+        }
+
+        document.querySelectorAll('[data-pending-shift-count]').forEach((count) => {
+            count.textContent = new Intl.NumberFormat('id-ID').format(pendingCount);
+            if (count instanceof HTMLElement) {
+                count.hidden = pendingCount === 0;
+            }
+        });
+        notification.setAttribute('aria-label', `${pendingCount} pengajuan shift menunggu persetujuan`);
+    };
+
+    window.setInterval(() => {
+        updateShiftRequestCount().catch((error) => console.error(error));
+    }, 8000);
+});
