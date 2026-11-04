@@ -11,7 +11,7 @@
     <div class="products-app-shell">
         <aside class="app-sidebar">
             <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Mochi Madiun">
-                <img class="mochi-logo sidebar-mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="Logo Mochi Madiun">
+                <img class="mochi-logo sidebar-mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="Logo Mochi Madiun">
             </a>
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
