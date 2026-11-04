@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -33,6 +35,7 @@ class ProfileTest extends TestCase
             $table->string('password', 60)->nullable();
             $table->string('no_telepon', 15)->nullable();
             $table->string('alamat', 100)->nullable();
+            $table->string('foto_profil')->nullable();
             $table->string('status', 12)->nullable();
             $table->string('role', 20)->nullable();
             $table->timestamps();
@@ -70,13 +73,20 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Profil Saya')
             ->assertSee('Mochi Admin')
+            ->assertSee('Foto profil')
+            ->assertSee('Unggah foto')
             ->assertSee('Administrator')
             ->assertSee('admin@example.com')
             ->assertSee('08123456789')
+            ->assertDontSee('Konfirmasi perubahan profil')
+            ->assertSee('Simpan profil')
+            ->assertSee('Ganti Password')
+            ->assertSee('Simpan password')
             ->assertSee('Madiun')
             ->assertSee('Pagi')
             ->assertSee('08:00–16:00')
             ->assertDontSee('Ringkasan shift Anda')
+            ->assertDontSee('Kembali ke beranda')
             ->assertDontSee('secret-password');
     }
 
@@ -104,10 +114,10 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Profil Saya')
             ->assertSee('AKUN SAYA')
-            ->assertSee('Perbarui informasi pribadi dan keamanan akun Anda.')
+            ->assertSee('Perbarui informasi pribadi atau ubah password akun Anda.')
             ->assertSee('Sore')
             ->assertSee('16:00–22:00')
-            ->assertSee('Kembali ke beranda')
+            ->assertDontSee('Kembali ke beranda')
             ->assertDontSee('Ringkasan shift Anda')
             ->assertDontSee('Buka halaman kasir')
             ->assertDontSee('Profil Kasir')
@@ -163,13 +173,11 @@ class ProfileTest extends TestCase
             'role' => 'SuperAdmin',
         ]);
 
-        $this->actingAs($user)->put('/profil', [
-            'nama_lengkap' => $user->nama_lengkap,
-            'email' => $user->email,
+        $this->actingAs($user)->put('/profil/password', [
             'password' => 'new-secret-password',
             'password_confirmation' => 'new-secret-password',
             'current_password' => 'secret-password',
-        ])->assertRedirect('/profil');
+        ])->assertRedirect('/profil')->assertSessionHas('status', 'Password berhasil diperbarui.');
 
         $this->assertTrue(Hash::check('new-secret-password', $user->fresh()->password));
         $this->assertFalse(Hash::check('secret-password', $user->fresh()->password));
@@ -186,14 +194,85 @@ class ProfileTest extends TestCase
             'role' => 'SuperAdmin',
         ]);
 
-        $this->actingAs($user)->from('/profil')->put('/profil', [
-            'nama_lengkap' => $user->nama_lengkap,
-            'email' => $user->email,
+        $this->actingAs($user)->from('/profil')->put('/profil/password', [
             'password' => 'new-secret-password',
             'password_confirmation' => 'new-secret-password',
             'current_password' => 'wrong-password',
-        ])->assertRedirect('/profil')->assertSessionHasErrors('current_password');
+        ])->assertRedirect('/profil')->assertSessionHasErrorsIn('password', 'current_password');
 
         $this->assertTrue(Hash::check('secret-password', $user->fresh()->password));
+    }
+
+    public function test_profile_edit_does_not_require_current_password(): void
+    {
+        $user = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Mochi Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+
+        $this->actingAs($user)->from('/profil')->put('/profil', [
+            'nama_lengkap' => 'Admin Baru',
+            'email' => 'adminbaru@example.com',
+        ])->assertRedirect('/profil')->assertSessionHas('status', 'Profil berhasil diperbarui.');
+
+        $this->assertDatabaseHas('ms_user', [
+            'id_user' => 1,
+            'nama_lengkap' => 'Admin Baru',
+            'email' => 'adminbaru@example.com',
+        ]);
+        $this->assertTrue(Hash::check('secret-password', $user->fresh()->password));
+    }
+
+    public function test_user_can_upload_and_remove_profile_photo(): void
+    {
+        Storage::fake('public');
+        $user = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Mochi Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+
+        $this->actingAs($user)->post('/profil/foto', [
+            'foto_profil' => UploadedFile::fake()->image('profil.jpg'),
+        ])->assertRedirect('/profil')
+            ->assertSessionHas('status', 'Foto profil berhasil diperbarui.');
+
+        $photoPath = $user->fresh()->foto_profil;
+        $this->assertNotNull($photoPath);
+        Storage::disk('public')->assertExists($photoPath);
+        $this->get('/profil')->assertSee(Storage::disk('public')->url($photoPath));
+
+        $this->post('/profil/foto', ['hapus_foto_profil' => '1'])
+            ->assertRedirect('/profil');
+
+        $this->assertNull($user->fresh()->foto_profil);
+        Storage::disk('public')->assertMissing($photoPath);
+    }
+
+    public function test_profile_photo_upload_rejects_non_image_files(): void
+    {
+        Storage::fake('public');
+        $user = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Mochi Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+
+        $this->actingAs($user)->from('/profil')->post('/profil/foto', [
+            'foto_profil' => UploadedFile::fake()->create('file.txt', 10, 'text/plain'),
+        ])->assertRedirect('/profil')
+            ->assertSessionHasErrorsIn('photo', 'foto_profil');
+
+        $this->assertNull($user->fresh()->foto_profil);
     }
 }

@@ -26,8 +26,18 @@
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Transaksi</span>
+                    <span>{{ auth()->user()->can('cashier') ? 'Transaksi' : 'Laporan Penjualan' }}</span>
                 </a>
+                @can('cashier')
+                    <a class="sidebar-nav-link" href="{{ route('history.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-9 9zm0 0h7m-7 0 3-3m-3 3 3 3M12 3v7m0 0 3 3m-3-3-3 3"/></svg>
+                        <span>Riwayat</span>
+                    </a>
+                    <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
+                        <span>Order</span>
+                    </a>
+                @endcan
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
@@ -44,12 +54,6 @@
                     <a class="sidebar-nav-link" href="{{ route('stocks.index') }}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
                         <span>Kelola Stok</span>
-                    </a>
-                @endcan
-                @can('cashier')
-                    <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                        <span>Order</span>
                     </a>
                 @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('profile.show') }}" aria-current="page">
@@ -73,16 +77,11 @@
             </header>
 
     <main class="products-main profile-main">
-        <a class="profile-back-link" href="{{ route('dashboard') }}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-            Kembali ke beranda
-        </a>
-
         <section class="profile-heading">
             <div>
                 <p class="products-eyebrow">AKUN SAYA</p>
                 <h1>Profil Saya</h1>
-                <p class="products-subtitle">Perbarui informasi pribadi dan keamanan akun Anda.</p>
+                <p class="products-subtitle">Perbarui informasi pribadi atau ubah password akun Anda.</p>
             </div>
         </section>
 
@@ -98,25 +97,50 @@
 
         <section class="profile-layout" aria-label="Informasi profil pengguna">
             <aside class="profile-summary">
-                <div class="profile-avatar" aria-hidden="true">
-                    {{ $user->nama_lengkap ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap, 0, 1)) : '?' }}
+                <div class="profile-summary-heading">
+                    <div class="profile-details-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                    </div>
+                    <h2>Profil Pengguna</h2>
                 </div>
-                <h2>{{ $user->nama_lengkap ?: 'Nama belum diisi' }}</h2>
+                <div class="profile-avatar" aria-hidden="true">
+                    @if ($user->foto_profil_url)
+                        <img class="profile-avatar-image" src="{{ $user->foto_profil_url }}" alt="Foto profil {{ $user->nama_lengkap ?: 'Pengguna' }}">
+                    @else
+                        {{ $user->nama_lengkap ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->nama_lengkap, 0, 1)) : '?' }}
+                    @endif
+                </div>
+                <h3>{{ $user->nama_lengkap ?: 'Nama belum diisi' }}</h3>
                 <p class="profile-role">{{ $user->role === 'SuperAdmin' ? 'Administrator' : ($user->role === 'Kasir' ? 'Kasir' : ($user->role ?: 'Peran belum diatur')) }}</p>
                 <span class="profile-status {{ $user->status === 'Aktif' ? 'profile-status-active' : 'profile-status-inactive' }}">
                     <span aria-hidden="true"></span>
                     {{ $user->status === 'Aktif' ? 'Akun aktif' : ($user->status === 'TidakAktif' ? 'Akun tidak aktif' : 'Status belum diatur') }}
                 </span>
+                <form class="profile-photo-form" action="{{ route('profile.photo.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <label class="profile-form-field" for="foto_profil">
+                        <span>Foto profil <span>(opsional, maks. 2 MB)</span></span>
+                        <input id="foto_profil" name="foto_profil" type="file" accept="image/*">
+                    </label>
+                    @error('foto_profil', 'photo')<span class="form-field-error">{{ $message }}</span>@enderror
+                    @if ($user->foto_profil)
+                        <label class="profile-photo-remove">
+                            <input type="checkbox" name="hapus_foto_profil" value="1">
+                            Hapus foto profil
+                        </label>
+                    @endif
+                    <button class="filter-button" type="submit">{{ $user->foto_profil ? 'Simpan foto' : 'Unggah foto' }}</button>
+                </form>
             </aside>
 
-            <div class="profile-details">
+            <section class="profile-details" aria-label="Edit profil pengguna">
                 <div class="profile-details-heading">
                     <div class="profile-details-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                     </div>
                     <div>
-                        <h2>Informasi pribadi</h2>
-                        <p>Detail profil akun Anda.</p>
+                        <h2>Edit Profil</h2>
+                        <p>Perbarui informasi pribadi Anda.</p>
                     </div>
                 </div>
 
@@ -128,22 +152,22 @@
                         <div class="profile-form-field">
                             <label for="nama_lengkap">Nama lengkap</label>
                             <input id="nama_lengkap" name="nama_lengkap" type="text" value="{{ old('nama_lengkap', $user->nama_lengkap) }}" maxlength="30" autocomplete="name" required>
-                            @error('nama_lengkap')<span class="form-field-error">{{ $message }}</span>@enderror
+                            @error('nama_lengkap', 'profile')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                         <div class="profile-form-field">
                             <label for="email">Email</label>
                             <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" maxlength="45" autocomplete="email" required>
-                            @error('email')<span class="form-field-error">{{ $message }}</span>@enderror
+                            @error('email', 'profile')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                         <div class="profile-form-field">
                             <label for="no_telepon">Nomor telepon <span>(opsional)</span></label>
                             <input id="no_telepon" name="no_telepon" type="tel" value="{{ old('no_telepon', $user->no_telepon) }}" maxlength="15" autocomplete="tel">
-                            @error('no_telepon')<span class="form-field-error">{{ $message }}</span>@enderror
+                            @error('no_telepon', 'profile')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                         <div class="profile-form-field">
                             <label for="alamat">Alamat <span>(opsional)</span></label>
                             <input id="alamat" name="alamat" type="text" value="{{ old('alamat', $user->alamat) }}" maxlength="100" autocomplete="street-address">
-                            @error('alamat')<span class="form-field-error">{{ $message }}</span>@enderror
+                            @error('alamat', 'profile')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                     </div>
 
@@ -155,7 +179,12 @@
                         @endif
                     </div>
 
-                    @if ($user->role === 'Kasir')
+                    <div class="profile-form-footer">
+                        <button class="filter-button" type="submit">Simpan profil</button>
+                    </div>
+                </form>
+
+                @if ($user->role === 'Kasir')
                         <section class="profile-shift-request" aria-label="Pengajuan perubahan shift">
                             <div class="profile-password-heading">
                                 <h3>Pengajuan perubahan shift</h3>
@@ -191,34 +220,43 @@
                                 </form>
                             @endif
                         </section>
-                    @endif
+                @endif
+            </section>
 
-                    <div class="profile-password-heading">
-                        <h3>Ganti password</h3>
-                        <p>Kosongkan jika tidak ingin mengganti password.</p>
+            <section class="profile-password-card" aria-label="Ganti password">
+                <div class="profile-details-heading">
+                    <div class="profile-details-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>
                     </div>
+                    <div>
+                        <h2>Ganti Password</h2>
+                        <p>Perbarui keamanan akun Anda.</p>
+                    </div>
+                </div>
+                <form class="profile-edit-form" action="{{ route('profile.password.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
                     <div class="profile-form-grid">
                         <div class="profile-form-field">
-                            <label for="current_password">Password saat ini</label>
-                            <input id="current_password" name="current_password" type="password" autocomplete="current-password">
-                            @error('current_password')<span class="form-field-error">{{ $message }}</span>@enderror
+                            <label for="password_current_password">Password saat ini</label>
+                            <input id="password_current_password" name="current_password" type="password" autocomplete="current-password" required>
+                            @error('current_password', 'password')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                         <div class="profile-form-field">
                             <label for="password">Password baru</label>
-                            <input id="password" name="password" type="password" autocomplete="new-password">
-                            @error('password')<span class="form-field-error">{{ $message }}</span>@enderror
+                            <input id="password" name="password" type="password" autocomplete="new-password" required>
+                            @error('password', 'password')<span class="form-field-error">{{ $message }}</span>@enderror
                         </div>
                         <div class="profile-form-field profile-confirm-password">
                             <label for="password_confirmation">Konfirmasi password baru</label>
-                            <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password">
+                            <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
                         </div>
                     </div>
-
                     <div class="profile-form-footer">
-                        <button class="filter-button" type="submit">Simpan perubahan</button>
+                        <button class="filter-button" type="submit">Simpan password</button>
                     </div>
                 </form>
-            </div>
+            </section>
         </section>
     </main>
         </div>

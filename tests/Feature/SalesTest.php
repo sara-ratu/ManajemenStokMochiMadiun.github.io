@@ -94,7 +94,7 @@ class SalesTest extends TestCase
 
     public function test_guest_is_redirected_from_sales_module(): void
     {
-        $this->get('/transaksi')->assertRedirect('/login');
+        $this->get('/transaksi-penjualan')->assertRedirect('/login');
     }
 
     public function test_cashier_can_view_product_picker_and_sales_history(): void
@@ -103,7 +103,7 @@ class SalesTest extends TestCase
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
-        $this->get('/transaksi')
+        $this->get('/transaksi-penjualan')
             ->assertOk()
             ->assertSeeInOrder(['Beranda', 'Transaksi'])
             ->assertSee('Transaksi Penjualan')
@@ -118,19 +118,44 @@ class SalesTest extends TestCase
             ->assertSee('Kasir');
     }
 
+    public function test_history_module_shows_sales_only(): void
+    {
+        $this->signIn('Kasir');
+        $this->createSale(1, \Illuminate\Support\Carbon::parse('2026-10-23 12:00:00'));
+        DB::table('tr_stok')->insert([
+            'id_stok' => 1,
+            'tanggal' => '2026-10-23',
+            'jumlah' => 5,
+            'keterangan' => 'Produksi pagi',
+            'ms_user_id_user' => '1',
+            'ms_produk_id_produk' => '1',
+        ]);
+
+        $this->get('/riwayat')
+            ->assertOk()
+            ->assertSee('RIWAYAT PENJUALAN')
+            ->assertSee('Riwayat Transaksi')
+            ->assertSee('#1')
+            ->assertDontSee('Riwayat Stok')
+            ->assertDontSee('Catatan Stok')
+            ->assertDontSee('Produksi pagi');
+    }
+
     public function test_super_admin_can_view_sales_reports_but_cannot_checkout(): void
     {
         $this->signIn('SuperAdmin');
 
-        $this->get('/transaksi')
+        $this->get('/transaksi-penjualan')
             ->assertOk()
-            ->assertSeeInOrder(['Beranda', 'Transaksi'])
+            ->assertSeeInOrder(['Beranda', 'Laporan Penjualan'])
+            ->assertDontSee('href="/riwayat"', false)
             ->assertSee('Laporan Penjualan')
             ->assertSee('Riwayat Transaksi')
             ->assertSee('sales-history-count', false)
             ->assertDontSee('data-sales-checkout', false);
 
-        $this->post('/transaksi', [])->assertForbidden();
+        $this->get('/riwayat')->assertForbidden();
+        $this->post('/transaksi-penjualan', [])->assertForbidden();
     }
 
     public function test_sales_history_can_be_filtered_by_a_custom_date_range(): void
@@ -140,14 +165,14 @@ class SalesTest extends TestCase
         $this->createSale(2, \Illuminate\Support\Carbon::parse('2026-10-22 12:00:00'));
         $this->createSale(3, \Illuminate\Support\Carbon::parse('2026-10-19 12:00:00'));
 
-        $this->get('/transaksi?start_date=2026-10-22&end_date=2026-10-23')
+        $this->get('/transaksi-penjualan?start_date=2026-10-22&end_date=2026-10-23')
             ->assertOk()
             ->assertSee('#1')
             ->assertSee('#2')
             ->assertDontSee('#3')
             ->assertSee('2 transaksi');
 
-        $this->get('/transaksi')
+        $this->get('/transaksi-penjualan')
             ->assertOk()
             ->assertSee('#1')
             ->assertSee('#2')
@@ -159,11 +184,11 @@ class SalesTest extends TestCase
     {
         $this->signIn('SuperAdmin');
 
-        $this->get('/transaksi?start_date=2026-10-22')
+        $this->get('/transaksi-penjualan?start_date=2026-10-22')
             ->assertRedirect()
             ->assertSessionHasErrors('end_date');
 
-        $this->get('/transaksi?start_date=2026-10-24&end_date=2026-10-23')
+        $this->get('/transaksi-penjualan?start_date=2026-10-24&end_date=2026-10-23')
             ->assertRedirect()
             ->assertSessionHasErrors('end_date');
     }
@@ -246,7 +271,7 @@ class SalesTest extends TestCase
         $this->post('/order-pelanggan/'.$order->id_pesanan.'/selesaikan', [
             'metode' => 'Tunai',
             'jumlah_bayar' => 30000,
-        ])->assertRedirect('/transaksi/'.$order->id_pesanan);
+        ])->assertRedirect('/transaksi-penjualan/'.$order->id_pesanan);
 
         $this->assertDatabaseHas('tr_pesanan', [
             'id_pesanan' => $order->id_pesanan,
@@ -301,14 +326,14 @@ class SalesTest extends TestCase
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
         $this->createProduct(2, 1, 'Mochi Cokelat', 10000, 5);
 
-        $this->post('/transaksi', [
+        $this->post('/transaksi-penjualan', [
             'items' => [
                 ['id_produk' => 1, 'jumlah' => 2],
                 ['id_produk' => 2, 'jumlah' => 1],
             ],
             'metode' => 'Tunai',
             'jumlah_bayar' => 50000,
-        ])->assertRedirect('/transaksi/1')->assertSessionHas('status');
+        ])->assertRedirect('/transaksi-penjualan/1')->assertSessionHas('status');
 
         $this->assertDatabaseHas('tr_pesanan', [
             'id_pesanan' => 1,
@@ -348,7 +373,7 @@ class SalesTest extends TestCase
             'keterangan' => 'Penjualan #1',
         ]);
 
-        $this->get('/transaksi/1')
+        $this->get('/transaksi-penjualan/1')
             ->assertOk()
             ->assertSee('TRANSAKSI BERHASIL')
             ->assertSee('Mochi Stroberi')
@@ -357,7 +382,7 @@ class SalesTest extends TestCase
             ->assertSee('Rp50.000')
             ->assertSee('Cetak Struk');
 
-        $this->get('/transaksi')
+        $this->get('/transaksi-penjualan')
             ->assertOk()
             ->assertSee('sales-history-id', false)
             ->assertSee('#1')
@@ -373,14 +398,14 @@ class SalesTest extends TestCase
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 1);
         $this->createProduct(2, 1, 'Mochi Cokelat', 10000, 5);
 
-        $this->from('/transaksi')->post('/transaksi', [
+        $this->from('/transaksi-penjualan')->post('/transaksi-penjualan', [
             'items' => [
                 ['id_produk' => 1, 'jumlah' => 2],
                 ['id_produk' => 2, 'jumlah' => 1],
             ],
             'metode' => 'Tunai',
             'jumlah_bayar' => 50000,
-        ])->assertRedirect('/transaksi')->assertSessionHasErrors('items');
+        ])->assertRedirect('/transaksi-penjualan')->assertSessionHasErrors('items');
 
         $this->assertDatabaseCount('tr_pesanan', 0);
         $this->assertDatabaseCount('tr_detail_pesanan', 0);
@@ -396,11 +421,11 @@ class SalesTest extends TestCase
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
-        $this->from('/transaksi')->post('/transaksi', [
+        $this->from('/transaksi-penjualan')->post('/transaksi-penjualan', [
             'items' => [['id_produk' => 1, 'jumlah' => 2]],
             'metode' => 'Tunai',
             'jumlah_bayar' => 20000,
-        ])->assertRedirect('/transaksi')->assertSessionHasErrors('jumlah_bayar');
+        ])->assertRedirect('/transaksi-penjualan')->assertSessionHasErrors('jumlah_bayar');
 
         $this->assertDatabaseCount('tr_pesanan', 0);
         $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'stok' => 8]);
@@ -412,14 +437,14 @@ class SalesTest extends TestCase
         $this->createCategory(1, 'Mochi Klasik');
         $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
 
-        $this->from('/transaksi')->post('/transaksi', [
+        $this->from('/transaksi-penjualan')->post('/transaksi-penjualan', [
             'items' => [
                 ['id_produk' => 1, 'jumlah' => 1],
                 ['id_produk' => 1, 'jumlah' => 1],
             ],
             'metode' => 'Bitcoin',
             'jumlah_bayar' => 30000,
-        ])->assertRedirect('/transaksi')
+        ])->assertRedirect('/transaksi-penjualan')
             ->assertSessionHasErrors(['items.1.id_produk', 'metode']);
 
         $this->assertDatabaseCount('tr_pesanan', 0);

@@ -63,11 +63,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/stok', [StockController::class, 'store'])->name('stocks.store');
     });
 
+    Route::get('/riwayat', [HistoryController::class, 'index'])
+        ->middleware('can:cashier')
+        ->name('history.index');
     Route::middleware('can:view-sales')->group(function () {
-        Route::get('/transaksi', [SalesController::class, 'index'])->name('sales.index');
-        Route::get('/transaksi/{sale}', [SalesController::class, 'show'])->whereNumber('sale')->name('sales.show');
+        Route::get('/transaksi-penjualan', [SalesController::class, 'index'])->name('sales.index');
+        Route::get('/transaksi-penjualan/{sale}', [SalesController::class, 'show'])->whereNumber('sale')->name('sales.show');
     });
-    Route::post('/transaksi', [SalesController::class, 'store'])
+    Route::post('/transaksi-penjualan', [SalesController::class, 'store'])
         ->middleware('can:cashier')
         ->name('sales.store');
     Route::post('/pengajuan-shift', [ShiftChangeRequestController::class, 'store'])
@@ -92,4 +95,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profil/foto', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+    Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
