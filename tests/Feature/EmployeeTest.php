@@ -78,7 +78,7 @@ class EmployeeTest extends TestCase
             ->assertSee('Pagi')
             ->assertSee('08:00–16:00')
             ->assertSee('Total Karyawan')
-            ->assertSeeInOrder(['Beranda', 'Transaksi'])
+            ->assertSeeInOrder(['Beranda', 'Laporan Penjualan'])
             ->assertDontSee('secret-password');
     }
 

@@ -32,13 +32,19 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
                     <span>Transaksi</span>
                 </a>
+                @can('cashier')
+                    <a class="sidebar-nav-link" href="{{ route('history.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-9 9zm0 0h7m-7 0 3-3m-3 3 3 3M12 3v7m0 0 3 3m-3-3-3 3"/></svg>
+                        <span>Riwayat</span>
+                    </a>
+                    <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
+                        <span>Order</span>
+                    </a>
+                @endcan
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('stocks.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 7l2-4h12l2 4M12 11v6m-3-3h6"/></svg>
                     <span>Kelola Stok</span>
-                </a>
-                <a class="sidebar-nav-link" href="{{ route('customer-orders.cashier.index') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m8 19 4 3 4-3"/></svg>
-                    <span>Order</span>
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('profile.show') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>

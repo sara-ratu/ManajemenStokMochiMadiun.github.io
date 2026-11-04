@@ -26,7 +26,7 @@
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Transaksi</span>
+                    <span>{{ auth()->user()->can('cashier') ? 'Transaksi' : 'Laporan Penjualan' }}</span>
                 </a>
                 <a class="sidebar-nav-link sidebar-nav-link-active" href="{{ route('employees.index') }}" aria-current="page">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>

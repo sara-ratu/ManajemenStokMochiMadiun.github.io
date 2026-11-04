@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -34,6 +35,7 @@ class User extends Authenticatable
         'password',
         'no_telepon',
         'alamat',
+        'foto_profil',
         'status',
         'role',
     ];
@@ -56,6 +58,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return ['password' => 'hashed'];
+    }
+
+    public function getFotoProfilUrlAttribute(): ?string
+    {
+        return $this->foto_profil
+            ? Storage::disk('public')->url($this->foto_profil)
+            : null;
     }
 
     public function shift(): BelongsTo

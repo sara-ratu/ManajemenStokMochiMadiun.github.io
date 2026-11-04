@@ -33,7 +33,7 @@
                 </a>
                 <a class="sidebar-nav-link" href="{{ route('sales.index') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h3m2 0h3m-8 4h8"/></svg>
-                    <span>Transaksi</span>
+                    <span>{{ auth()->user()->can('cashier') ? 'Transaksi' : 'Laporan Penjualan' }}</span>
                 </a>
                 @can('manage-employees')
                     <a class="sidebar-nav-link" href="{{ route('employees.index') }}">
