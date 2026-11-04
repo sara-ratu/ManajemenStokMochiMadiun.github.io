@@ -346,6 +346,7 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
     const statusUrl = statusCard.dataset.statusUrl;
     const statusLabel = statusCard.querySelector('[data-status-label]');
     const statusMessage = statusCard.querySelector('[data-status-message]');
+    const qrisSection = statusCard.querySelector('[data-customer-order-qris]');
     const messages = {
         Pending: 'Menunggu konfirmasi dari kasir.',
         Batal: 'Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.',
@@ -366,6 +367,9 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         statusLabel.textContent = order.status === 'Pending' ? 'Menunggu' : order.status;
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
+        if (qrisSection instanceof HTMLElement) {
+            qrisSection.hidden = order.status !== 'Pending';
+        }
 
         if (['Batal', 'Selesai'].includes(order.status)) {
             window.clearInterval(statusPoll);

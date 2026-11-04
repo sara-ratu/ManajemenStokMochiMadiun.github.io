@@ -226,7 +226,11 @@ class SalesTest extends TestCase
             ->assertOk()
             ->assertSee('PESANAN #'.$order->id_pesanan)
             ->assertSee('Menunggu konfirmasi dari kasir.')
-            ->assertSee('Mochi Stroberi');
+            ->assertSee('Mochi Stroberi')
+            ->assertSee('Bayar dengan QRIS')
+            ->assertSee('qris-merchant-sara-ratu.png')
+            ->assertSee('Rp30.000')
+            ->assertSee('memeriksa transaksi masuk di akun merchant');
 
         preg_match('/data-status-url="([^"]+)"/', $trackResponse->getContent(), $matches);
         $statusUrl = html_entity_decode($matches[1] ?? '');
