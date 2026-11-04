@@ -33,6 +33,6 @@ class Product extends Model
             return $this->gambar;
         }
 
-        return '/storage/'.ltrim($this->gambar, '/');
+        return asset('storage/'.ltrim($this->gambar, '/'));
     }
 }
