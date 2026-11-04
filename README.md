@@ -35,6 +35,8 @@ Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang 
 
 Setelah instalasi, jalankan `php artisan storage:link` agar gambar yang diunggah ke penyimpanan publik dapat diakses melalui `/storage`.
 
+Katalog produk awal dan empat foto produk yang tersedia di repositori dapat disalin ke database dan penyimpanan lokal dengan menjalankan `php artisan db:seed --class=ProductCatalogSeeder`. Seeder memperbarui nama produk yang cocok, termasuk harga dan stok; periksa data terlebih dahulu sebelum menjalankannya pada database yang sudah digunakan. Foto Mochi Strawberry Choco belum tersedia di repositori.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
