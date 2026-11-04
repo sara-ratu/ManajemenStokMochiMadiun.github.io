@@ -10,7 +10,7 @@
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
-            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
+            <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             @php($salesNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $salesNow->toIso8601String() }}">{{ $salesNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $salesNow->format('H.i') }}</time></small>
         </a>

@@ -10,7 +10,7 @@
 <body class="products-page customer-order-page">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('customer-orders.create') }}" aria-label="Mochi Madiun">
-            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
+            <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             <small>Menu pemesanan pelanggan</small>
         </a>
     </header>
@@ -33,7 +33,10 @@
                     <button type="button" class="customer-order-tab" data-category-tab="{{ $category->id_kategori }}">{{ $category->nama_kategori }}</button>
                 @endforeach
             </div>
-            <input type="search" class="customer-order-search" id="customer-product-search" placeholder="Cari produk..." autocomplete="off" aria-label="Cari produk">
+            <label class="customer-order-search-field" for="customer-product-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+                <input type="search" class="customer-order-search" id="customer-product-search" placeholder="Cari produk..." autocomplete="off" aria-label="Cari produk">
+            </label>
         </div>
         <p class="customer-order-search-empty" id="customer-search-empty" hidden>Produk tidak ditemukan.</p>
 

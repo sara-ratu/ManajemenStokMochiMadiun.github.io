@@ -10,7 +10,7 @@
 <body class="products-page catalog-page">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
-            <img class="mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="">
+            <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             @php($receiptNow = now('Asia/Jakarta'))
             <small><time data-live-clock datetime="{{ $receiptNow->toIso8601String() }}">{{ $receiptNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $receiptNow->format('H.i') }}</time></small>
         </a>
@@ -53,7 +53,7 @@
                 @endif
                 <section class="sales-receipt-card">
                     <div class="sales-receipt-print-brand">
-                        <img class="receipt-mochi-logo" src="{{ asset('images/mochi-madiun-logo.png') }}" alt="Logo Mochi Madiun">
+                        <img class="receipt-mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="Logo Mochi Madiun">
                         <span>BUKTI TRANSAKSI</span>
                     </div>
                     <div class="sales-receipt-heading">
