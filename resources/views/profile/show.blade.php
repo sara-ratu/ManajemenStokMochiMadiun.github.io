@@ -80,7 +80,6 @@
         <section class="profile-heading">
             <div>
                 <p class="products-eyebrow">AKUN SAYA</p>
-                <h1>Profil Saya</h1>
                 <p class="products-subtitle">Perbarui informasi pribadi atau ubah password akun Anda.</p>
             </div>
         </section>
