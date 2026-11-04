@@ -18,7 +18,6 @@
         <section class="products-heading">
             <div>
                 <p class="products-eyebrow">PESAN ONLINE</p>
-                <h1>Pilih Mochi Favoritmu</h1>
                 <p class="products-subtitle">Kirim pesanan ke kasir. Pembayaran dilakukan langsung kepada kasir setelah pesanan diperiksa.</p>
             </div>
         </section>
