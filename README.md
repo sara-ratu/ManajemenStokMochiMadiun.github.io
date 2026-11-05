@@ -35,7 +35,9 @@ Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang 
 
 Setelah instalasi, jalankan `php artisan storage:link` agar gambar yang diunggah ke penyimpanan publik dapat diakses melalui `/storage`.
 
-Katalog produk awal dan empat foto produk yang tersedia di repositori dapat disalin ke database dan penyimpanan lokal dengan menjalankan `php artisan db:seed --class=ProductCatalogSeeder`. Seeder memperbarui nama produk yang cocok, termasuk harga dan stok; periksa data terlebih dahulu sebelum menjalankannya pada database yang sudah digunakan. Foto Mochi Strawberry Choco belum tersedia di repositori.
+Enam belas foto produk tersedia di `storage/app/public/products`. Jika database sudah berisi produk, jalankan `php artisan db:seed --class=ProductCatalogSyncSeeder` untuk menambahkan produk katalog yang belum ada. Seeder mencocokkan berdasarkan nama produk, memakai ID baru agar tidak bertabrakan, mempertahankan data produk yang sudah ada, dan hanya melengkapi foto jika produk yang cocok belum memiliki gambar. Seeder berhenti dengan pesan kesalahan jika ada file foto katalog yang belum tersedia.
+
+`ProductCatalogSeeder` hanya untuk mengisi atau memperbarui katalog awal pada database pengembangan baru; seeder tersebut juga mengatur harga dan stok produk yang cocok. Jangan jalankan pada database operasional tanpa memeriksa dampaknya terlebih dahulu.
 
 ## Learning Laravel
 
