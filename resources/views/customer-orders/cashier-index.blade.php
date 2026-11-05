@@ -14,7 +14,7 @@
             @php
                 $orderNow = now('Asia/Jakarta');
             @endphp
-            <small><time data-live-clock datetime="{{ $orderNow->toIso8601String() }}">{{ $orderNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $orderNow->format('H.i') }}</time></small>
+            <small class="catalog-datetime"><time data-live-clock datetime="{{ $orderNow->toIso8601String() }}">{{ $orderNow->locale('id')->translatedFormat('D, d M Y') }} · {{ $orderNow->format('H.i') }} WIB</time></small>
         </a>
     </header>
     <div class="products-app-shell">

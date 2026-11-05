@@ -3,9 +3,9 @@ import './bootstrap';
 document.querySelectorAll('[data-live-clock]').forEach((clock) => {
     const dateFormatter = new Intl.DateTimeFormat('id-ID', {
         day: '2-digit',
-        month: 'long',
+        month: 'short',
         timeZone: 'Asia/Jakarta',
-        weekday: 'long',
+        weekday: 'short',
         year: 'numeric',
     });
     const timeFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -14,11 +14,21 @@ document.querySelectorAll('[data-live-clock]').forEach((clock) => {
         minute: '2-digit',
         timeZone: 'Asia/Jakarta',
     });
+    const dateLabel = document.createElement('span');
+    const timeLabel = document.createElement('span');
+    dateLabel.className = 'catalog-clock-date';
+    timeLabel.className = 'catalog-clock-time';
+    clock.classList.add('catalog-live-clock');
+    clock.replaceChildren(dateLabel, timeLabel);
 
     const updateClock = () => {
         const now = new Date();
+        const date = dateFormatter.format(now);
+        const time = `${timeFormatter.format(now).replace(':', '.')} WIB`;
 
-        clock.textContent = `${dateFormatter.format(now)} · ${timeFormatter.format(now).replace(':', '.')}`;
+        dateLabel.textContent = date;
+        timeLabel.textContent = time;
+        clock.setAttribute('aria-label', `${date}, pukul ${time}`);
         clock.dateTime = now.toISOString();
     };
 
