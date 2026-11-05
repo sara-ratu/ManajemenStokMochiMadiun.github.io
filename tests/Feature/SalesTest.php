@@ -151,11 +151,59 @@ class SalesTest extends TestCase
             ->assertDontSee('href="/riwayat"', false)
             ->assertSee('Laporan Penjualan')
             ->assertSee('Riwayat Transaksi')
+            ->assertSee('Cetak laporan')
+            ->assertSee('Ekspor CSV')
             ->assertSee('sales-history-count', false)
+            ->assertDontSee('Lihat struk')
             ->assertDontSee('data-sales-checkout', false);
 
+        $this->get('/transaksi-penjualan/laporan/cetak')->assertOk()->assertSee('Laporan Penjualan');
+        $this->get('/transaksi-penjualan/laporan/csv')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
+            ->assertSee('"No. Pesanan";"Tanggal & Waktu";"Nama Kasir";"Total Penjualan (Rp)"', false);
         $this->get('/riwayat')->assertForbidden();
+        $this->get('/transaksi-penjualan/1')->assertForbidden();
         $this->post('/transaksi-penjualan', [])->assertForbidden();
+    }
+
+    public function test_only_super_admin_can_print_or_export_sales_reports(): void
+    {
+        $this->signIn('Kasir');
+
+        $this->get('/transaksi-penjualan/laporan/cetak')->assertForbidden();
+        $this->get('/transaksi-penjualan/laporan/csv')->assertForbidden();
+    }
+
+    public function test_print_and_csv_reports_respect_selected_date_range(): void
+    {
+        $this->signIn('SuperAdmin');
+        $this->createSale(1, \Illuminate\Support\Carbon::parse('2026-10-23 12:00:00'));
+        $this->createSale(2, \Illuminate\Support\Carbon::parse('2026-10-22 12:00:00'));
+        $this->createSale(3, \Illuminate\Support\Carbon::parse('2026-10-19 12:00:00'));
+
+        $this->get('/transaksi-penjualan/laporan/cetak?start_date=2026-10-22&end_date=2026-10-23')
+            ->assertOk()
+            ->assertSee('sales-report-brand', false)
+            ->assertDontSee('@page sales-report', false)
+            ->assertDontSee('page: sales-report', false)
+            ->assertDontSee('size: A4 landscape', false)
+            ->assertDontSee('Ukuran kertas')
+            ->assertDontSee('Orientasi')
+            ->assertDontSee('Pratinjau:')
+            ->assertSee('Periode laporan')
+            ->assertSee('Tanggal cetak')
+            ->assertSee('Total 2 transaksi')
+            ->assertSee('#1')
+            ->assertSee('#2')
+            ->assertDontSee('#3')
+            ->assertViewHas('salesCount', 2);
+
+        $this->get('/transaksi-penjualan/laporan/csv?start_date=2026-10-22&end_date=2026-10-23')
+            ->assertOk()
+            ->assertSee('#2;"22/10/2026 12:00";"Mochi Kasir";10000', false)
+            ->assertSee('#1;"23/10/2026 12:00";"Mochi Kasir";10000', false)
+            ->assertDontSee('#3;', false);
     }
 
     public function test_sales_history_can_be_filtered_by_a_custom_date_range(): void

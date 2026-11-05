@@ -235,6 +235,12 @@
                             @if ($startDate || $endDate)
                                 <a class="stock-clear-filter" href="{{ route('sales.index', $search !== '' ? ['q' => $search] : []) }}">Reset</a>
                             @endif
+                            @cannot('cashier')
+                                <span class="sales-report-actions">
+                                    <a class="sales-report-action" href="{{ route('sales.print', array_filter(['start_date' => $startDate, 'end_date' => $endDate])) }}" target="_blank" rel="noopener">Cetak laporan</a>
+                                    <a class="sales-report-action sales-report-action-export" href="{{ route('sales.export', array_filter(['start_date' => $startDate, 'end_date' => $endDate])) }}">Ekspor CSV</a>
+                                </span>
+                            @endcannot
                         </div>
                     </form>
                     <div class="catalog-table-scroll">
@@ -246,7 +252,9 @@
                                     <th scope="col">Kasir</th>
                                     <th scope="col">Total</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col">Detail</th>
+                                    @can('cashier')
+                                        <th scope="col">Detail</th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -260,10 +268,12 @@
                                         <td class="sales-history-cashier">{{ $sale->nama_kasir ?: 'Pengguna #'.$sale->ms_user_id_user }}</td>
                                         <td class="sales-history-total">Rp{{ number_format((int) $sale->total, 0, ',', '.') }}</td>
                                         <td><span class="sale-status-badge">{{ $sale->status }}</span></td>
-                                        <td><a class="sales-detail-link sales-history-action" href="{{ route('sales.show', $sale->id_pesanan) }}">Lihat struk <span aria-hidden="true">→</span></a></td>
+                                        @can('cashier')
+                                            <td><a class="sales-detail-link sales-history-action" href="{{ route('sales.show', $sale->id_pesanan) }}">Lihat struk <span aria-hidden="true">→</span></a></td>
+                                        @endcan
                                     </tr>
                                 @empty
-                                    <tr><td class="stock-empty-cell sales-history-empty" colspan="6"><span aria-hidden="true">🧾</span><strong>Belum ada transaksi</strong><span>Transaksi yang berhasil diproses akan tampil di sini.</span></td></tr>
+                                    <tr><td class="stock-empty-cell sales-history-empty" colspan="{{ auth()->user()->can('cashier') ? 6 : 5 }}"><span aria-hidden="true">🧾</span><strong>Belum ada transaksi</strong><span>Transaksi yang berhasil diproses akan tampil di sini.</span></td></tr>
                                 @endforelse
                             </tbody>
                         </table>

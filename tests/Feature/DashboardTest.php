@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -131,6 +132,46 @@ class DashboardTest extends TestCase
             ->assertDontSee('Produk</strong>');
     }
 
+    public function test_sales_chart_can_be_filtered_by_custom_date_range(): void
+    {
+        $admin = $this->createUser(1, 'SuperAdmin', 'Admin Mochi');
+        Carbon::setTestNow('2026-03-15 12:00:00');
+
+        try {
+            $this->createOrder(1, 'Selesai', 10000, '2025-12-20 10:00:00');
+            $this->createOrder(2, 'Selesai', 20000, '2026-01-20 10:00:00');
+            $this->createOrder(3, 'Selesai', 30000, '2026-03-15 10:00:00');
+
+            $this->actingAs($admin)
+                ->get('/dashboard?q=mochi&from=2026-03-01&to=2026-03-15')
+                ->assertOk()
+                ->assertSee('name="q" value="mochi"', false)
+                ->assertSee('name="from" type="date" value="2026-03-01"', false)
+                ->assertSee('name="to" type="date" value="2026-03-15"', false)
+                ->assertSee('7 hari terakhir')
+                ->assertSee('30 hari terakhir')
+                ->assertSee('q=mochi', false)
+                ->assertSee('Pendapatan dari 01/03/2026 sampai 15/03/2026')
+                ->assertViewHas('chartDays', fn ($days) => $days->count() === 15
+                    && $days->last()['total'] === 30000);
+
+            $this->get('/dashboard?from=2025-12-01&to=2026-03-15')
+                ->assertOk()
+                ->assertViewHas('chartDays', fn ($days) => $days->count() === 15
+                    && $days->sum('total') === 60000);
+
+            $this->get('/dashboard?from=2024-01-01&to=2026-03-15')
+                ->assertOk()
+                ->assertViewHas('chartDays', fn ($days) => $days->count() === 27
+                    && $days->sum('total') === 60000);
+
+            $this->get('/dashboard?from=2026-03-16&to=2026-03-15')
+                ->assertSessionHasErrors('to');
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     private function createUser(int $id, string $role, string $name): User
     {
         return User::query()->create([
@@ -153,11 +194,11 @@ class DashboardTest extends TestCase
         ]);
     }
 
-    private function createOrder(int $id, string $status, int $total): void
+    private function createOrder(int $id, string $status, int $total, ?string $date = null): void
     {
         Schema::getConnection()->table('tr_pesanan')->insert([
             'id_pesanan' => $id,
-            'tanggal' => now('Asia/Jakarta')->toDateTimeString(),
+            'tanggal' => $date ?? now('Asia/Jakarta')->toDateTimeString(),
             'total' => $total,
             'status' => $status,
         ]);

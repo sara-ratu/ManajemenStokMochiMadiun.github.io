@@ -308,7 +308,7 @@
                 data-product-dialog
                 @if ($errors->any() && $editingEmployee) data-open-on-load @endif
             >
-                <form class="product-dialog-form" action="{{ route('employees.update', $employee->id_user) }}" method="POST">
+                <form class="product-dialog-form" action="{{ route('employees.update', $employee->id_user) }}" method="POST" data-confirm-employee-update>
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="edit_employee_id" value="{{ $employee->id_user }}">
@@ -392,6 +392,19 @@
             <div class="delete-confirm-actions">
                 <button type="button" class="delete-confirm-accept" data-confirm-delete-action>Ya, hapus</button>
                 <button type="button" class="delete-confirm-cancel" data-close-delete-dialog>Batal</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="save-confirm-dialog" aria-labelledby="employee-save-title" aria-describedby="employee-save-message" data-employee-save-confirm-dialog>
+        <div class="delete-confirm-heading">
+            <h2 id="employee-save-title">Simpan Perubahan?</h2>
+            <button type="button" class="delete-confirm-close" aria-label="Tutup" data-close-employee-save-confirm>&times;</button>
+        </div>
+        <div class="delete-confirm-body">
+            <p id="employee-save-message">Yakin ingin menyimpan perubahan data karyawan ini?</p>
+            <div class="delete-confirm-actions">
+                <button type="button" class="delete-confirm-accept" data-confirm-employee-update-action>Ya, simpan</button>
+                <button type="button" class="delete-confirm-cancel" data-close-employee-save-confirm>Batal</button>
             </div>
         </div>
     </dialog>

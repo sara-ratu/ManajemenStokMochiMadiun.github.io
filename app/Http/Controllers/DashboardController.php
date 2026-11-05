@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ShiftChangeRequest;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -13,14 +14,56 @@ class DashboardController extends Controller
 {
     public function index(Request $request): View
     {
-        $today = now('Asia/Jakarta')->toDateString();
-        $chartStart = now('Asia/Jakarta')->subDays(29)->startOfDay();
+        $now = now('Asia/Jakarta');
+        $today = $now->toDateString();
         $isCashier = $request->user()->role === 'Kasir';
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'from' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from', 'before_or_equal:today'],
         ]);
         $search = $filters['q'] ?? '';
+        $chartEnd = Carbon::parse($filters['to'] ?? $now->toDateString(), 'Asia/Jakarta')->endOfDay();
+        $chartStart = Carbon::parse(
+            $filters['from'] ?? $chartEnd->copy()->subDays(29)->toDateString(),
+            'Asia/Jakarta'
+        )->startOfDay();
+        $chartQuickRanges = collect([7, 30])->map(function (int $days) use ($now, $search, $chartStart, $chartEnd): array {
+            $from = $now->copy()->subDays($days - 1)->toDateString();
+            $to = $now->toDateString();
 
+            return [
+                'label' => $days.' hari',
+                'from' => $from,
+                'to' => $to,
+                'url' => route('dashboard', array_filter([
+                    'q' => $search ?: null,
+                    'from' => $from,
+                    'to' => $to,
+                ])),
+                'active' => $from === $chartStart->toDateString() && $to === $chartEnd->toDateString(),
+            ];
+        });
+        $rangeDays = (int) $chartStart->diffInDays($chartEnd) + 1;
+        $chartInterval = $rangeDays <= 31 ? 'day' : ($rangeDays <= 366 ? 'week' : 'month');
+        $chartStep = match ($chartInterval) {
+            'day' => 1,
+            'week' => 7,
+            default => null,
+        };
+        $chartBuckets = collect();
+        $bucketDate = $chartInterval === 'month' ? $chartStart->copy()->startOfMonth() : $chartStart->copy();
+        while ($bucketDate->lte($chartEnd)) {
+            $chartBuckets->push([
+                'key' => $chartInterval === 'month' ? $bucketDate->format('Y-m') : $bucketDate->toDateString(),
+                'label' => $bucketDate->locale('id')->translatedFormat($chartInterval === 'month' ? 'M y' : 'd M'),
+            ]);
+            if ($chartStep !== null) {
+                $bucketDate->addDays($chartStep);
+            } else {
+                $bucketDate->addMonth()->startOfMonth();
+            }
+        }
         $salesToday = DB::table('tr_pesanan')
             ->where('status', 'Selesai')
             ->whereDate('tanggal', $today);
@@ -33,21 +76,35 @@ class DashboardController extends Controller
             ->pluck('total', 'metode');
         $dailyTotals = DB::table('tr_pesanan')
             ->where('status', 'Selesai')
-            ->where('tanggal', '>=', $chartStart->toDateTimeString())
+            ->whereBetween('tanggal', [$chartStart->toDateTimeString(), $chartEnd->toDateTimeString()])
             ->selectRaw('DATE(tanggal) as sale_date, SUM(total) as total')
             ->groupBy('sale_date')
             ->orderBy('sale_date')
             ->get()
             ->keyBy('sale_date');
-        $chartDays = collect(range(0, 29))->map(function (int $offset) use ($chartStart, $dailyTotals): array {
-            $date = $chartStart->copy()->addDays($offset)->toDateString();
+        $chartTotals = $dailyTotals->reduce(function (array $totals, object $saleDay) use ($chartInterval, $chartStart): array {
+            $date = (string) $saleDay->sale_date;
+            $key = match ($chartInterval) {
+                'day' => $date,
+                'week' => $chartStart->copy()->addDays(intdiv((int) $chartStart->diffInDays(Carbon::parse($date)), 7) * 7)->toDateString(),
+                default => substr($date, 0, 7),
+            };
+            $totals[$key] = ($totals[$key] ?? 0) + (int) $saleDay->total;
 
+            return $totals;
+        }, []);
+        $chartDays = $chartBuckets->map(function (array $bucket) use ($chartTotals): array {
             return [
-                'date' => $date,
-                'label' => $chartStart->copy()->addDays($offset)->format('d'),
-                'total' => (int) ($dailyTotals->get($date)->total ?? 0),
+                'date' => $bucket['key'],
+                'label' => $bucket['label'],
+                'total' => (int) ($chartTotals[$bucket['key']] ?? 0),
             ];
         });
+        $labelStep = max((int) ceil($chartDays->count() / 6), 1);
+        $chartLabels = $chartDays
+            ->filter(fn (array $bucket, int $index) => $index % $labelStep === 0 || $index === $chartDays->count() - 1)
+            ->pluck('label');
+        $chartDescription = 'Pendapatan dari '.$chartStart->format('d/m/Y').' sampai '.$chartEnd->format('d/m/Y');
 
         $recentSales = DB::table('tr_pesanan as sale')
             ->leftJoin('ms_user as user', 'user.id_user', '=', 'sale.ms_user_id_user')
@@ -82,10 +139,11 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $chartMax = max((int) $chartDays->max('total'), 1);
-        $chartPoints = $chartDays->values()->map(function (array $day, int $index) use ($chartDays, $chartMax): string {
+        $chartMax = max((int) $chartDays->max('total'), 0);
+        $chartScaleMax = max($chartMax, 1);
+        $chartPoints = $chartDays->values()->map(function (array $day, int $index) use ($chartDays, $chartScaleMax): string {
             $x = $chartDays->count() > 1 ? 12 + ($index * 576 / ($chartDays->count() - 1)) : 12;
-            $y = 174 - ($day['total'] / $chartMax * 150);
+            $y = 174 - ($day['total'] / $chartScaleMax * 150);
 
             return number_format($x, 2, '.', '').','.number_format($y, 2, '.', '');
         });
@@ -111,7 +169,13 @@ class DashboardController extends Controller
             'otherPaymentToday' => $otherPaymentToday,
             'totalPaymentToday' => $totalPaymentToday,
             'chartDays' => $chartDays,
+            'chartLabels' => $chartLabels,
             'chartPoints' => $chartPoints->implode(' '),
+            'chartMax' => $chartMax,
+            'chartFrom' => $chartStart->toDateString(),
+            'chartTo' => $chartEnd->toDateString(),
+            'chartQuickRanges' => $chartQuickRanges,
+            'chartPeriodDescription' => $chartDescription,
             'recentSales' => $recentSales,
             'topProducts' => $topProducts,
             'pendingOrderCount' => $isCashier

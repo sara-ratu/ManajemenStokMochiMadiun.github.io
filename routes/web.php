@@ -69,7 +69,16 @@ Route::middleware('auth')->group(function () {
         ->name('history.index');
     Route::middleware('can:view-sales')->group(function () {
         Route::get('/transaksi-penjualan', [SalesController::class, 'index'])->name('sales.index');
-        Route::get('/transaksi-penjualan/{sale}', [SalesController::class, 'show'])->whereNumber('sale')->name('sales.show');
+        Route::get('/transaksi-penjualan/laporan/cetak', [SalesController::class, 'printReport'])
+            ->middleware('can:manage-employees')
+            ->name('sales.print');
+        Route::get('/transaksi-penjualan/laporan/csv', [SalesController::class, 'exportReport'])
+            ->middleware('can:manage-employees')
+            ->name('sales.export');
+        Route::get('/transaksi-penjualan/{sale}', [SalesController::class, 'show'])
+            ->whereNumber('sale')
+            ->middleware('can:cashier')
+            ->name('sales.show');
     });
     Route::post('/transaksi-penjualan', [SalesController::class, 'store'])
         ->middleware('can:cashier')

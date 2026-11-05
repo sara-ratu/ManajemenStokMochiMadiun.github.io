@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Services\SaleProcessor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -139,5 +140,94 @@ class SalesController extends Controller
             ->first();
 
         return view('sales.show', compact('order', 'details', 'payment'));
+    }
+
+    public function printReport(Request $request): View
+    {
+        $filters = $request->validate([
+            'start_date' => ['nullable', 'required_with:end_date', 'date_format:Y-m-d'],
+            'end_date' => ['nullable', 'required_with:start_date', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+        ]);
+        $sales = $this->completedSalesQuery($filters)
+            ->leftJoin('ms_user as user', 'user.id_user', '=', 'tr_pesanan.ms_user_id_user')
+            ->select([
+                'tr_pesanan.id_pesanan',
+                'tr_pesanan.tanggal',
+                'tr_pesanan.total',
+                'tr_pesanan.ms_user_id_user',
+                'user.nama_lengkap as nama_kasir',
+            ])
+            ->orderBy('tr_pesanan.tanggal')
+            ->orderBy('tr_pesanan.id_pesanan')
+            ->get();
+
+        return view('sales.print', [
+            'sales' => $sales,
+            'startDate' => $filters['start_date'] ?? null,
+            'endDate' => $filters['end_date'] ?? null,
+            'salesCount' => $sales->count(),
+            'salesTotal' => (int) $sales->sum('total'),
+        ]);
+    }
+
+    public function exportReport(Request $request): Response
+    {
+        $filters = $request->validate([
+            'start_date' => ['nullable', 'required_with:end_date', 'date_format:Y-m-d'],
+            'end_date' => ['nullable', 'required_with:start_date', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+        ]);
+        $sales = $this->completedSalesQuery($filters)
+            ->leftJoin('ms_user as user', 'user.id_user', '=', 'tr_pesanan.ms_user_id_user')
+            ->select([
+                'tr_pesanan.id_pesanan',
+                'tr_pesanan.tanggal',
+                'tr_pesanan.total',
+                'tr_pesanan.ms_user_id_user',
+                'user.nama_lengkap as nama_kasir',
+            ])
+            ->orderBy('tr_pesanan.tanggal')
+            ->orderBy('tr_pesanan.id_pesanan')
+            ->get();
+
+        $csv = fopen('php://temp', 'r+');
+        if ($csv === false) {
+            throw new \RuntimeException('Tidak dapat menyiapkan file ekspor laporan penjualan.');
+        }
+
+        $safeCsvText = static fn (string $value): string => preg_match('/^[\s]*[=+\-@]/u', $value) === 1
+            ? "'".$value
+            : $value;
+        $writeCsvRow = static function ($stream, array $row): void {
+            fputcsv($stream, $row, ';', '"', '', "\r\n");
+        };
+        $writeCsvRow($csv, ['No. Pesanan', 'Tanggal & Waktu', 'Nama Kasir', 'Total Penjualan (Rp)']);
+        foreach ($sales as $sale) {
+            $writeCsvRow($csv, [
+                '#'.$sale->id_pesanan,
+                \Illuminate\Support\Carbon::parse($sale->tanggal)->format('d/m/Y H:i'),
+                $safeCsvText((string) ($sale->nama_kasir ?: 'Pengguna #'.$sale->ms_user_id_user)),
+                (int) $sale->total,
+            ]);
+        }
+        rewind($csv);
+        $content = stream_get_contents($csv);
+        fclose($csv);
+
+        if ($content === false) {
+            throw new \RuntimeException('Tidak dapat membaca file ekspor laporan penjualan.');
+        }
+
+        return response("\xEF\xBB\xBF".$content, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="laporan-penjualan.csv"',
+        ]);
+    }
+
+    private function completedSalesQuery(array $filters)
+    {
+        return DB::table('tr_pesanan')
+            ->where('tr_pesanan.status', 'Selesai')
+            ->when($filters['start_date'] ?? null, fn ($query, string $date) => $query->whereDate('tr_pesanan.tanggal', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($query, string $date) => $query->whereDate('tr_pesanan.tanggal', '<=', $date));
     }
 }

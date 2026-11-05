@@ -134,16 +134,34 @@
                 <section class="dashboard-analytics">
                     <article class="dashboard-panel dashboard-sales-chart">
                         <div class="dashboard-panel-heading">
-                            <div><h1>Grafik Penjualan</h1><p>Penjualan selesai selama 30 hari terakhir</p></div>
-                            <span class="dashboard-chart-period">30 hari terakhir</span>
+                            <div><h1>Grafik Penjualan</h1><p>{{ $chartPeriodDescription }}</p></div>
+                            <form class="dashboard-chart-filter" method="GET" action="{{ route('dashboard') }}">
+                                @if ($search !== '')
+                                    <input type="hidden" name="q" value="{{ $search }}">
+                                @endif
+                                <span class="dashboard-chart-filter-title">Rentang waktu</span>
+                                <div class="dashboard-chart-date-fields">
+                                    <label for="dashboard-chart-from">Dari</label>
+                                    <input id="dashboard-chart-from" name="from" type="date" value="{{ $chartFrom }}" max="{{ now('Asia/Jakarta')->toDateString() }}" required>
+                                    <label for="dashboard-chart-to">Sampai</label>
+                                    <input id="dashboard-chart-to" name="to" type="date" value="{{ $chartTo }}" max="{{ now('Asia/Jakarta')->toDateString() }}" required>
+                                </div>
+                                <div class="dashboard-chart-shortcuts" aria-label="Rentang waktu cepat">
+                                    <span>Pilih cepat</span>
+                                    @foreach ($chartQuickRanges as $quickRange)
+                                        <a href="{{ $quickRange['url'] }}" @if ($quickRange['active']) aria-current="page" @endif>{{ $quickRange['label'] }} terakhir</a>
+                                    @endforeach
+                                </div>
+                                <button type="submit">Terapkan</button>
+                            </form>
                         </div>
                         <div class="dashboard-chart">
                             <div class="dashboard-chart-axis" aria-hidden="true">
-                                <span>Rp{{ number_format(max((int) $chartDays->max('total'), 0), 0, ',', '.') }}</span>
-                                <span>Rp{{ number_format((int) floor($chartDays->max('total') / 2), 0, ',', '.') }}</span>
+                                <span>Rp{{ number_format($chartMax, 0, ',', '.') }}</span>
+                                <span>Rp{{ number_format((int) floor($chartMax / 2), 0, ',', '.') }}</span>
                                 <span>Rp0</span>
                             </div>
-                            <svg viewBox="0 0 600 190" preserveAspectRatio="none" role="img" aria-label="Grafik pendapatan harian 30 hari terakhir">
+                            <svg viewBox="0 0 600 190" preserveAspectRatio="none" role="img" aria-label="Grafik pendapatan: {{ $chartPeriodDescription }}">
                                 <defs>
                                     <linearGradient id="dashboard-chart-fill" x1="0" x2="0" y1="0" y2="1">
                                         <stop offset="0%" stop-color="#ff6687" stop-opacity=".65"/>
@@ -156,8 +174,8 @@
                             </svg>
                         </div>
                         <div class="dashboard-chart-labels" aria-hidden="true">
-                            @foreach ($chartDays->filter(fn (array $day, int $index) => $index % 5 === 0 || $index === 29) as $day)
-                                <span>{{ $day['label'] }}</span>
+                            @foreach ($chartLabels as $label)
+                                <span>{{ $label }}</span>
                             @endforeach
                         </div>
                     </article>

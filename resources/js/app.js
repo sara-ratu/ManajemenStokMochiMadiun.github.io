@@ -274,6 +274,100 @@ document.querySelectorAll('[data-delete-dialog]').forEach((dialog) => {
     });
 });
 
+document.querySelectorAll('[data-employee-save-confirm-dialog]').forEach((dialog) => {
+    if (!(dialog instanceof HTMLDialogElement)) {
+        return;
+    }
+
+    let pendingForm = null;
+    const confirmButton = dialog.querySelector('[data-confirm-employee-update-action]');
+
+    dialog.querySelectorAll('[data-close-employee-save-confirm]').forEach((button) => {
+        button.addEventListener('click', () => dialog.close());
+    });
+
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
+
+    dialog.addEventListener('close', () => {
+        pendingForm = null;
+    });
+
+    document.querySelectorAll('[data-confirm-employee-update]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (form.dataset.confirmed === 'true') {
+                delete form.dataset.confirmed;
+                return;
+            }
+
+            event.preventDefault();
+            pendingForm = form;
+            dialog.showModal();
+        });
+    });
+
+    confirmButton?.addEventListener('click', () => {
+        if (pendingForm instanceof HTMLFormElement) {
+            const form = pendingForm;
+            pendingForm = null;
+            form.dataset.confirmed = 'true';
+            form.requestSubmit();
+        }
+
+        dialog.close();
+    });
+});
+
+document.querySelectorAll('[data-product-save-confirm-dialog]').forEach((dialog) => {
+    if (!(dialog instanceof HTMLDialogElement)) {
+        return;
+    }
+
+    let pendingForm = null;
+    const confirmButton = dialog.querySelector('[data-confirm-product-update-action]');
+
+    dialog.querySelectorAll('[data-close-product-save-confirm]').forEach((button) => {
+        button.addEventListener('click', () => dialog.close());
+    });
+
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
+
+    dialog.addEventListener('close', () => {
+        pendingForm = null;
+    });
+
+    document.querySelectorAll('[data-confirm-product-update]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (form.dataset.confirmed === 'true') {
+                delete form.dataset.confirmed;
+                return;
+            }
+
+            event.preventDefault();
+            pendingForm = form;
+            dialog.showModal();
+        });
+    });
+
+    confirmButton?.addEventListener('click', () => {
+        if (pendingForm instanceof HTMLFormElement) {
+            const form = pendingForm;
+            pendingForm = null;
+            form.dataset.confirmed = 'true';
+            form.requestSubmit();
+        }
+
+        dialog.close();
+    });
+});
+
 document.querySelectorAll('[data-product-dialog]').forEach((dialog) => {
     if (!(dialog instanceof HTMLDialogElement)) {
         return;

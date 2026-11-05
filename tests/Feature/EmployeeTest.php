@@ -233,6 +233,10 @@ class EmployeeTest extends TestCase
             ->assertOk()
             ->assertSee('data-open-product-dialog="edit-employee-2"', false)
             ->assertSee('id="edit-employee-2"', false)
+            ->assertSee('data-confirm-employee-update', false)
+            ->assertSee('data-employee-save-confirm-dialog', false)
+            ->assertSee('Simpan Perubahan?')
+            ->assertSee('Ya, simpan')
             ->assertSee('Ubah Karyawan')
             ->assertSee('Kasir Pagi');
 

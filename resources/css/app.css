@@ -719,7 +719,8 @@ body.login-page {
     gap: 20px;
 }
 
-.delete-confirm-dialog {
+.delete-confirm-dialog,
+.save-confirm-dialog {
     position: fixed;
     inset: 50% auto auto 50%;
     width: min(360px, calc(100% - 32px));
@@ -735,7 +736,8 @@ body.login-page {
     color: #40383b;
 }
 
-.delete-confirm-dialog::backdrop {
+.delete-confirm-dialog::backdrop,
+.save-confirm-dialog::backdrop {
     background: rgb(35 25 29 / 42%);
 }
 
@@ -2811,6 +2813,7 @@ button.add-product-button {
 .sales-product-stock {
     color: #887d81;
     font-size: 10px;
+    white-space: nowrap;
 }
 
 .sales-add-button {
@@ -5547,8 +5550,131 @@ button.add-product-button {
     padding: 6px 10px;
     border: 1px solid #eee8ea;
     border-radius: 7px;
+    background: #fff;
     color: #847a7d;
     font-size: 10px;
+}
+
+.dashboard-chart-filter {
+    display: grid;
+    flex: 0 1 400px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "title title"
+        "dates dates"
+        "shortcuts submit";
+    align-items: center;
+    gap: 6px 8px;
+    padding: 8px 9px;
+    border: 1px solid #f4e3e8;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff9fb 0%, #fff 100%);
+    box-shadow: 0 3px 12px rgb(118 65 78 / 5%);
+}
+
+.dashboard-chart-filter-title {
+    grid-area: title;
+    color: #9a858c;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.dashboard-chart-date-fields {
+    grid-area: dates;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 5px;
+}
+
+.dashboard-chart-date-fields label {
+    color: #85757a;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.dashboard-chart-date-fields input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 5px;
+    border: 1px solid #eddee3;
+    border-radius: 8px;
+    background: #fff;
+    color: #594b50;
+    font: inherit;
+    font-size: 10px;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.dashboard-chart-date-fields input:hover {
+    border-color: #e8aeba;
+}
+
+.dashboard-chart-shortcuts {
+    grid-area: shortcuts;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.dashboard-chart-shortcuts span {
+    margin-right: 3px;
+    color: #9a858c;
+    font-size: 9px;
+}
+
+.dashboard-chart-shortcuts a {
+    padding: 4px 7px;
+    border: 1px solid #f1dfe4;
+    border-radius: 999px;
+    background: #fff;
+    color: #85757a;
+    font-size: 9px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+}
+
+.dashboard-chart-shortcuts a:hover,
+.dashboard-chart-shortcuts a[aria-current="page"] {
+    border-color: #fb5c7e;
+    background: #ffedf1;
+    color: #d94367;
+}
+
+.dashboard-chart-shortcuts a:focus-visible {
+    outline: 2px solid #dc466b;
+    outline-offset: 2px;
+}
+
+.dashboard-chart-filter button {
+    grid-area: submit;
+    min-width: 76px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: #fb5c7e;
+    color: #fff;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 7px rgb(251 92 126 / 18%);
+    transition: background-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.dashboard-chart-filter button:hover {
+    background: #e94d70;
+    box-shadow: 0 4px 9px rgb(251 92 126 / 24%);
+    transform: translateY(-1px);
+}
+
+.dashboard-chart-date-fields input:focus-visible,
+.dashboard-chart-filter button:focus-visible {
+    outline: 2px solid #dc466b;
+    outline-offset: 2px;
 }
 
 .dashboard-chart {
@@ -5794,6 +5920,8 @@ button.add-product-button {
     .dashboard-page .dashboard-stat-icon { width: 30px; height: 30px; flex-basis: 30px; }
     .dashboard-stat-value strong { font-size: 14px; }
     .dashboard-panel { padding: 13px; border-radius: 16px; }
+    .dashboard-sales-chart .dashboard-panel-heading { flex-wrap: wrap; }
+    .dashboard-chart-filter { width: 100%; flex-basis: 100%; }
     .dashboard-chart { height: 165px; margin-left: 35px; }
     .dashboard-chart-labels { margin-left: 35px; }
     .dashboard-chart-axis { left: -36px; font-size: 8px; }
@@ -5851,4 +5979,371 @@ button.add-product-button {
     border-color: #f0c2c9;
     background: #fff1f3;
     color: #b14d60;
+}
+
+.sales-report-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-left: 4px;
+}
+
+.sales-report-action {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 1px solid #e8b4c0;
+    border-radius: 9px;
+    background: #fff;
+    color: #a9435d;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sales-report-action:hover {
+    background: #fff4f6;
+}
+
+.sales-report-action-export {
+    border-color: #b8dfc5;
+    color: #347b4f;
+}
+
+.sales-report-action-export:hover {
+    background: #f1faf3;
+}
+
+.sales-report-print-page {
+    min-height: 100vh;
+    padding: 32px;
+    background: #f8f5f6;
+    color: #41383b;
+    font-family: inherit;
+}
+
+.sales-report-print {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px;
+    border: 1px solid #f0e2e6;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 26px rgb(112 71 82 / 7%);
+}
+
+.sales-report-print-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #f3dfe5;
+}
+
+.sales-report-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sales-report-brand img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.sales-report-brand .products-eyebrow {
+    margin: 0 0 4px;
+    color: #a9435d;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+.sales-report-print-header h1 {
+    margin: 0;
+    color: #3e3540;
+    font-size: 24px;
+}
+
+.sales-report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 26px;
+    margin: 16px 0 0 60px;
+}
+
+.sales-report-meta > div {
+    display: grid;
+    gap: 3px;
+}
+
+.sales-report-meta dt {
+    color: #897a80;
+    font-size: 10px;
+}
+
+.sales-report-meta dd {
+    margin: 0;
+    color: #51434a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.sales-report-print-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 8px;
+}
+
+.sales-report-print-actions a,
+.sales-report-print-actions button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 13px;
+    border: 1px solid #eddde2;
+    border-radius: 8px;
+    background: #fff;
+    color: #765962;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sales-report-print-actions button {
+    border-color: #fb5c7e;
+    background: #fb5c7e;
+    color: #fff;
+}
+
+.sales-report-print-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 22px;
+}
+
+.sales-report-print-summary > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    border: 1px solid #f0e2e6;
+    border-left: 3px solid #e86b86;
+    border-radius: 8px;
+    background: #fffafb;
+}
+
+.sales-report-print-summary span {
+    color: #897a80;
+    font-size: 11px;
+}
+
+.sales-report-print-summary strong {
+    color: #a9435d;
+    font-size: 17px;
+}
+
+.sales-report-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.sales-report-print-table th,
+.sales-report-print-table td {
+    padding: 9px 11px;
+    border-bottom: 1px solid #f0e7e9;
+    text-align: left;
+}
+
+.sales-report-print-table th {
+    background: #fdf2f5;
+    color: #745962;
+    font-size: 11px;
+}
+
+.sales-report-print-table tbody tr:nth-child(even) {
+    background: #fffbfc;
+}
+
+.sales-report-print-table tbody tr {
+    break-inside: avoid;
+}
+
+.sales-report-print-table tfoot th {
+    border-top: 2px solid #e9cbd3;
+    border-bottom: 0;
+    background: #fff7f9;
+    color: #51434a;
+    font-size: 12px;
+}
+
+.sales-report-print-table tfoot th:last-child {
+    color: #a9435d;
+    font-size: 13px;
+}
+
+.sales-report-print-amount {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.sales-report-print-empty {
+    padding: 28px !important;
+    color: #897a80;
+    text-align: center !important;
+}
+
+.sales-report-print-footer {
+    margin-top: 20px;
+    color: #897a80;
+    font-size: 10px;
+    text-align: right;
+}
+
+@media (max-width: 680px) {
+    .sales-report-print-page { padding: 12px; }
+    .sales-report-print { padding: 17px; }
+    .sales-report-print-header { flex-direction: column; }
+    .sales-report-print-header h1 { font-size: 21px; }
+    .sales-report-print-actions { width: 100%; }
+    .sales-report-print-actions > button { width: 100%; }
+    .sales-report-print-summary { gap: 8px; }
+    .sales-report-print-summary > div { padding: 11px; }
+    .sales-report-print-summary strong { font-size: 16px; }
+    .sales-report-print-table th,
+    .sales-report-print-table td { padding: 8px 6px; font-size: 10px; }
+    .sales-report-meta { margin-left: 0; }
+}
+
+@media print {
+    @page {
+        margin: 12mm;
+    }
+
+    html,
+    body.sales-report-print-page {
+        display: block;
+        width: auto !important;
+        min-width: 0;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    body.sales-report-print-page {
+        color: #222 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    body.sales-report-print-page .sales-report-print {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    body.sales-report-print-page .sales-report-print-actions {
+        display: none;
+    }
+
+    body.sales-report-print-page .sales-report-print-header {
+        break-inside: avoid;
+        padding-bottom: 5mm;
+    }
+
+    body.sales-report-print-page .sales-report-brand img {
+        width: 14mm;
+        height: 14mm;
+    }
+
+    body.sales-report-print-page .sales-report-print-summary > div {
+        break-inside: avoid;
+        background: #fff;
+    }
+
+    body.sales-report-print-page .sales-report-print-summary {
+        margin: 5mm 0 7mm;
+    }
+
+    body.sales-report-print-page .sales-report-print-table {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 9pt;
+    }
+
+    body.sales-report-print-page .sales-report-print-table th,
+    body.sales-report-print-page .sales-report-print-table td {
+        padding: 2mm;
+        overflow-wrap: anywhere;
+    }
+
+    body.sales-report-print-page .sales-report-print-table thead {
+        display: table-header-group;
+    }
+
+    body.sales-report-print-page .sales-report-print-table tfoot {
+        display: table-row-group;
+    }
+
+    body.sales-report-print-page .sales-report-print-table tr {
+        break-inside: avoid;
+    }
+}
+
+@media print and (orientation: portrait) {
+    body.sales-report-print-page .sales-report-print-header {
+        display: block;
+    }
+
+    body.sales-report-print-page .sales-report-meta {
+        margin-left: 0;
+    }
+
+    body.sales-report-print-page .sales-report-print-summary {
+        grid-template-columns: 1fr;
+        gap: 2mm;
+    }
+
+    body.sales-report-print-page .sales-report-print-summary > div {
+        padding: 2.5mm 3mm;
+    }
+
+    body.sales-report-print-page .sales-report-print-table {
+        font-size: 8pt;
+    }
+
+    body.sales-report-print-page .sales-report-print-table th,
+    body.sales-report-print-page .sales-report-print-table td {
+        padding: 1.5mm 1mm;
+    }
+}
+
+@media print and (orientation: landscape) {
+    body.sales-report-print-page .sales-report-print-header {
+        display: flex;
+    }
+
+    body.sales-report-print-page .sales-report-print-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.sales-report-print-page .sales-report-print-table {
+        font-size: 9pt;
+    }
 }

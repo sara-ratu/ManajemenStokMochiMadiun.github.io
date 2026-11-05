@@ -373,7 +373,7 @@
                 data-product-dialog
                 @if ($errors->any() && (string) old('edit_product_id') === (string) $product->id_produk) data-open-on-load @endif
             >
-                <form class="product-dialog-form" action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
+                <form class="product-dialog-form" action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" data-confirm-product-update>
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="edit_product_id" value="{{ $product->id_produk }}">
@@ -444,6 +444,20 @@
                 </form>
             </dialog>
         @endforeach
+
+        <dialog class="save-confirm-dialog" aria-labelledby="product-save-title" aria-describedby="product-save-message" data-product-save-confirm-dialog>
+            <div class="delete-confirm-heading">
+                <h2 id="product-save-title">Simpan Perubahan?</h2>
+                <button type="button" class="delete-confirm-close" aria-label="Tutup" data-close-product-save-confirm>&times;</button>
+            </div>
+            <div class="delete-confirm-body">
+                <p id="product-save-message">Yakin ingin menyimpan perubahan data produk ini?</p>
+                <div class="delete-confirm-actions">
+                    <button type="button" class="delete-confirm-accept" data-confirm-product-update-action>Ya, simpan</button>
+                    <button type="button" class="delete-confirm-cancel" data-close-product-save-confirm>Batal</button>
+                </div>
+            </div>
+        </dialog>
 
         <dialog class="delete-confirm-dialog" aria-labelledby="delete-confirm-title" aria-describedby="delete-confirm-message" data-delete-dialog>
             <div class="delete-confirm-heading">
