@@ -97,7 +97,7 @@ class SalesTest extends TestCase
         $this->get('/transaksi-penjualan')->assertRedirect('/login');
     }
 
-    public function test_cashier_can_view_product_picker_and_sales_history(): void
+    public function test_cashier_can_view_product_picker_without_sales_history(): void
     {
         $this->signIn('Kasir');
         $this->createCategory(1, 'Mochi Klasik');
@@ -112,10 +112,8 @@ class SalesTest extends TestCase
             ->assertSee('Rp15.000')
             ->assertSee('Keranjang')
             ->assertSee('Metode Pembayaran')
-            ->assertSee('Riwayat Transaksi')
-            ->assertSee('sales-history-table', false)
-            ->assertSee('ID Pesanan')
-            ->assertSee('Kasir');
+            ->assertDontSee('Riwayat Transaksi')
+            ->assertDontSee('sales-history-table', false);
     }
 
     public function test_history_module_shows_sales_only(): void
@@ -436,11 +434,9 @@ class SalesTest extends TestCase
 
         $this->get('/transaksi-penjualan')
             ->assertOk()
-            ->assertSee('sales-history-id', false)
-            ->assertSee('#1')
-            ->assertSee('Mochi Kasir')
-            ->assertSee('Rp40.000')
-            ->assertSee('Lihat struk');
+            ->assertDontSee('sales-history-id', false)
+            ->assertDontSee('Lihat struk')
+            ->assertDontSee('#1');
     }
 
     public function test_insufficient_stock_rejects_whole_checkout_without_partial_rows(): void
