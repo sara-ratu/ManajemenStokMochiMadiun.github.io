@@ -1543,6 +1543,12 @@ body.login-page {
     transition: background-color 150ms ease, transform 150ms ease;
 }
 
+button.add-product-button {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
 .add-product-button:hover {
     transform: translateY(-1px);
     background: #dc4668;

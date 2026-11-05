@@ -72,6 +72,9 @@ class EmployeeTest extends TestCase
             ->get('/karyawan')
             ->assertOk()
             ->assertSee('Data Karyawan')
+            ->assertSee('data-open-product-dialog="add-employee-dialog"', false)
+            ->assertSee('id="add-employee-dialog"', false)
+            ->assertSee('name="form_type" value="employee"', false)
             ->assertSee('Kasir Mochi')
             ->assertSee('kasir@example.com')
             ->assertSee('08123456789')
@@ -80,6 +83,35 @@ class EmployeeTest extends TestCase
             ->assertSee('Total Karyawan')
             ->assertSeeInOrder(['Beranda', 'Laporan Penjualan'])
             ->assertDontSee('secret-password');
+    }
+
+    public function test_invalid_employee_create_reopens_the_add_modal_with_errors(): void
+    {
+        $admin = User::query()->create([
+            'id_user' => 1,
+            'nama_lengkap' => 'Admin Mochi',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'SuperAdmin',
+        ]);
+
+        $this->actingAs($admin)
+            ->from('/karyawan')
+            ->post('/karyawan', [
+                'form_type' => 'employee',
+                'nama_lengkap' => '',
+                'email' => 'bukan-email',
+            ])
+            ->assertRedirect('/karyawan')
+            ->assertSessionHasErrors(['nama_lengkap', 'email', 'password']);
+
+        $this->get('/karyawan')
+            ->assertOk()
+            ->assertSee('id="add-employee-dialog"', false)
+            ->assertSee('data-open-on-load', false)
+            ->assertSee('value="bukan-email"', false)
+            ->assertSee('Periksa kembali data karyawan yang Anda masukkan.');
     }
 
     public function test_employee_search_filters_the_list(): void
