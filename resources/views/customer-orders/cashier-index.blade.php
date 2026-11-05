@@ -11,7 +11,9 @@
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
             <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
-            @php($orderNow = now('Asia/Jakarta'))
+            @php
+                $orderNow = now('Asia/Jakarta');
+            @endphp
             <small><time data-live-clock datetime="{{ $orderNow->toIso8601String() }}">{{ $orderNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $orderNow->format('H.i') }}</time></small>
         </a>
     </header>
@@ -72,26 +74,28 @@
                     Ada order baru. <button type="button" data-refresh-order-queue>Muat ulang antrean</button>
                 </div>
                 <section class="customer-order-queue">
-                    @forelse ($orders as $order)
-                        <article class="customer-order-queue-card">
-                            <div class="customer-order-queue-heading">
-                                <div><span>Order #{{ $order->id_pesanan }}</span><time>{{ \Illuminate\Support\Carbon::parse($order->tanggal)->locale('id')->translatedFormat('d M Y, H.i') }}</time></div>
-                                <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($order->status) }}">Menunggu</span>
-                            </div>
-                            <p class="customer-order-queue-customer">Pelanggan <span>· Order daring</span></p>
-                            <p class="customer-order-queue-items">{{ $order->items->map(fn ($item) => ($item->nama_produk ?: 'Produk #'.$item->id_produk).' × '.$item->jumlah)->join(', ') }}</p>
-                            <div class="customer-order-queue-bottom">
-                                <strong>Rp{{ number_format((int) $order->total, 0, ',', '.') }}</strong>
-                                <a class="sales-detail-link sales-history-action" href="{{ route('customer-orders.cashier.show', $order->id_pesanan) }}">Periksa pesanan <span aria-hidden="true">→</span></a>
-                            </div>
-                        </article>
-                    @empty
+                    @if ($orders->isEmpty())
                         <div class="customer-order-empty">
                             <span aria-hidden="true">🔔</span>
                             <strong>Belum ada pesanan aktif</strong>
                             <p>Order yang masuk akan muncul di sini.</p>
                         </div>
-                    @endforelse
+                    @else
+                        @foreach ($orders as $order)
+                            <article class="customer-order-queue-card">
+                                <div class="customer-order-queue-heading">
+                                    <div><span>Order #{{ $order->id_pesanan }}</span><time>{{ \Illuminate\Support\Carbon::parse($order->tanggal)->locale('id')->translatedFormat('d M Y, H.i') }}</time></div>
+                                    <span class="customer-order-status-pill customer-order-status-{{ \Illuminate\Support\Str::slug($order->status) }}">Menunggu</span>
+                                </div>
+                                <p class="customer-order-queue-customer">Pelanggan <span>· Order daring</span></p>
+                                <p class="customer-order-queue-items">{{ $order->items->map(fn ($item) => ($item->nama_produk ?: 'Produk #'.$item->id_produk).' × '.$item->jumlah)->join(', ') }}</p>
+                                <div class="customer-order-queue-bottom">
+                                    <strong>Rp{{ number_format((int) $order->total, 0, ',', '.') }}</strong>
+                                    <a class="sales-detail-link sales-history-action" href="{{ route('customer-orders.cashier.show', $order->id_pesanan) }}">Periksa pesanan <span aria-hidden="true">→</span></a>
+                                </div>
+                            </article>
+                        @endforeach
+                    @endif
                 </section>
             </main>
         </div>

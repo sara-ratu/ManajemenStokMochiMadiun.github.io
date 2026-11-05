@@ -39,7 +39,7 @@
                 <section class="customer-order-qris" data-customer-order-qris aria-labelledby="customer-order-qris-title">
                     <h2 id="customer-order-qris-title">Bayar dengan QRIS</h2>
                     <p>Pindai QRIS ini melalui aplikasi pembayaran dan masukkan nominal tepat seperti total pesanan di atas.</p>
-                    <img src="{{ asset('images/qris-merchant-sara-ratu.png') }}" alt="QRIS merchant SARA RATU">
+                    <img src="{{ asset('images/qris-merchant-sara-ratu.png') }}" alt="QRIS merchant Mochi Madiun">
                     <p class="customer-order-qris-warning">Pesanan baru dianggap dibayar setelah kasir memeriksa transaksi masuk di akun merchant. Simpan bukti pembayaran sampai pesanan dikonfirmasi.</p>
                 </section>
             @endif
