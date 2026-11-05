@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\ProductCatalogSyncSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -54,6 +57,56 @@ class ProductTest extends TestCase
     public function test_guest_is_redirected_to_login(): void
     {
         $this->get('/produk')->assertRedirect('/login');
+    }
+
+    public function test_catalog_sync_seeder_adds_missing_products_without_overwriting_existing_data(): void
+    {
+        Storage::fake('public');
+        foreach (File::files(storage_path('app/public/products')) as $file) {
+            Storage::disk('public')->put('products/'.$file->getFilename(), File::get($file->getPathname()));
+        }
+
+        $this->createCategory(1, 'Mochi Basic');
+        $this->createCategory(2, 'Mochi Daifuku');
+        $existingProducts = [
+            [1, 2, 'Mochi Strawberry Choco', 8000, 4, null],
+            [2, 1, 'Mochi Kacang Wijen', 5000, 7, 'products/uoncerxYKClLLk7rckUxtDmDLa94kurwDRTye7UT.jpg'],
+            [3, 1, 'Mochi Nutella', 6000, 3, 'products/DeKPt749hm7YKI1eaAaqYkSXyaFz73bZ5ZrvTk5U.jpg'],
+            [4, 1, 'Mochi Lotus Biscoff', 6000, 0, 'products/u8THNqVRW4lmqaXwzocfnbsR4kf8UYOxqK3HMztu.jpg'],
+            [5, 1, 'Mochi Milo', 5000, 8, 'products/N3pcQuWOfuRgoRDhxrpxupDvUGPhaoNsS79HT0KK.jpg'],
+            [6, 1, 'Mochi Ubi Cream', 7500, 6, null],
+        ];
+
+        foreach ($existingProducts as [$id, $categoryId, $name, $price, $stock, $image]) {
+            $this->createProduct($id, $categoryId, $name, $price, $stock);
+            DB::table('ms_produk')->where('id_produk', $id)->update(['gambar' => $image]);
+        }
+
+        $this->seed(ProductCatalogSyncSeeder::class);
+
+        $this->assertSame(17, Product::query()->count());
+        $this->assertDatabaseHas('ms_produk', [
+            'id_produk' => 6,
+            'nama_produk' => 'Mochi Ubi Cream',
+            'harga' => 7500,
+            'stok' => 6,
+            'gambar' => null,
+        ]);
+        $this->assertDatabaseHas('ms_produk', [
+            'id_produk' => 1,
+            'nama_produk' => 'Mochi Strawberry Choco',
+            'harga' => 8000,
+            'stok' => 4,
+            'gambar' => 'products/BomD4sCVx62qMx1Voe5BENUkr8dcl0y8CZXulfgN.png',
+        ]);
+        $this->assertDatabaseHas('ms_produk', [
+            'id_produk' => 7,
+            'nama_produk' => 'Mochi Choco Crunchy',
+        ]);
+
+        $this->seed(ProductCatalogSyncSeeder::class);
+        $this->assertSame(17, Product::query()->count());
+        $this->assertSame(4, Product::query()->findOrFail(1)->stok);
     }
 
     public function test_authenticated_user_can_view_products_and_category(): void
