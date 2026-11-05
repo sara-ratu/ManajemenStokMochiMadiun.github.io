@@ -210,6 +210,8 @@
                     </section>
                 @endcan
 
+                @cannot('cashier')
+                  
                 <section class="stock-history-card sales-history-card" aria-label="Riwayat transaksi penjualan">
                     <div class="stock-history-heading">
                         <div>
@@ -282,6 +284,7 @@
                         <div class="catalog-pagination">{{ $sales->links() }}</div>
                     @endif
                 </section>
+                @endcannot
             </main>
         </div>
     </div>
