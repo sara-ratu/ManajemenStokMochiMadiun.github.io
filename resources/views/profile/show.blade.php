@@ -12,7 +12,7 @@
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
             <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             @php($profileNow = now('Asia/Jakarta'))
-            <small><time data-live-clock datetime="{{ $profileNow->toIso8601String() }}">{{ $profileNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $profileNow->format('H.i') }}</time></small>
+            <small class="catalog-datetime"><time data-live-clock datetime="{{ $profileNow->toIso8601String() }}">{{ $profileNow->locale('id')->translatedFormat('D, d M Y') }} · {{ $profileNow->format('H.i') }} WIB</time></small>
         </a>
     </header>
 

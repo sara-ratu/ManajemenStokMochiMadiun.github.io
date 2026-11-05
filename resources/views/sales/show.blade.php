@@ -12,7 +12,7 @@
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
             <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             @php($receiptNow = now('Asia/Jakarta'))
-            <small><time data-live-clock datetime="{{ $receiptNow->toIso8601String() }}">{{ $receiptNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $receiptNow->format('H.i') }}</time></small>
+            <small class="catalog-datetime"><time data-live-clock datetime="{{ $receiptNow->toIso8601String() }}">{{ $receiptNow->locale('id')->translatedFormat('D, d M Y') }} · {{ $receiptNow->format('H.i') }} WIB</time></small>
         </a>
         <a class="sales-receipt-top-link" href="{{ route('sales.index') }}">{{ auth()->user()->can('cashier') ? 'Kembali ke kasir' : 'Kembali ke laporan' }}</a>
     </header>

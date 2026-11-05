@@ -12,7 +12,7 @@
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
             <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
             @php($stockNow = now('Asia/Jakarta'))
-            <small><time data-live-clock datetime="{{ $stockNow->toIso8601String() }}">{{ $stockNow->locale('id')->translatedFormat('l, d F Y') }} · {{ $stockNow->format('H.i') }}</time></small>
+            <small class="catalog-datetime"><time data-live-clock datetime="{{ $stockNow->toIso8601String() }}">{{ $stockNow->locale('id')->translatedFormat('D, d M Y') }} · {{ $stockNow->format('H.i') }} WIB</time></small>
         </a>
         <form class="catalog-search" method="GET" action="{{ route('stocks.index') }}" role="search">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
