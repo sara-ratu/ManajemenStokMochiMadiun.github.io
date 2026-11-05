@@ -595,9 +595,29 @@ body.login-page {
 }
 
 .dialog-form-field {
-    display: grid;
+    display: flex;
     min-width: 0;
+    align-self: start;
+    flex-direction: column;
     gap: 8px;
+}
+
+.stock-entry-form .stock-product-field,
+.stock-entry-form .stock-note-field {
+    grid-column: 1 / -1;
+}
+
+.stock-entry-form .product-dialog-actions {
+    width: min(100%, 420px);
+    justify-self: end;
+    gap: 12px;
+    margin-top: 0;
+}
+
+.stock-entry-form .dialog-cancel-button,
+.stock-entry-form .dialog-submit-button {
+    min-height: 46px;
+    font-size: 14px;
 }
 
 .dialog-form-field label {

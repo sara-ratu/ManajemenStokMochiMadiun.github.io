@@ -277,20 +277,6 @@
                     </div>
 
                     <div class="dialog-form-field">
-                        <label for="dialog-kategori">Kategori</label>
-                        <select id="dialog-kategori" name="id_kategori" aria-describedby="dialog-kategori-help">
-                            <option value="">Pilih kategori</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id_kategori }}" @selected((string) old('id_kategori') === (string) $category->id_kategori)>
-                                    {{ $category->nama_kategori }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <span class="category-id-selection" id="dialog-kategori-help">Kategori belum ada? Tutup form ini, pilih <strong>Tambah Kategori</strong>, lalu kembali untuk memilihnya.</span>
-                        @error('id_kategori')<span class="form-field-error" id="dialog-kategori-error">{{ $message }}</span>@enderror
-                    </div>
-
-                    <div class="dialog-form-field">
                         <label for="dialog-harga">Harga (Rp)</label>
                         <input
                             id="dialog-harga"
@@ -307,20 +293,24 @@
                         @error('harga')<span class="form-field-error" id="dialog-harga-error">{{ $message }}</span>@enderror
                     </div>
 
-                    <div class="dialog-form-field product-dialog-image-field">
-                        <label for="dialog-gambar-url">Gambar Produk <span>(URL atau unggah foto)</span></label>
-                        <input
-                            id="dialog-gambar-url"
-                            name="gambar_url"
-                            type="url"
-                            value="{{ old('gambar_url') }}"
-                            maxlength="100"
-                            placeholder="https://contoh.com/gambar.jpg"
-                            autocomplete="url"
-                            @if ($errors->has('gambar_url')) aria-describedby="dialog-gambar-url-error" @endif
-                        >
-                        @error('gambar_url')<span class="form-field-error" id="dialog-gambar-url-error">{{ $message }}</span>@enderror
-                        <input id="dialog-gambar" name="gambar" type="file" accept="image/*">
+                    <div class="dialog-form-field">
+                        <label for="dialog-kategori">Kategori</label>
+                        <select id="dialog-kategori" name="id_kategori" aria-describedby="dialog-kategori-help">
+                            <option value="">Pilih kategori</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id_kategori }}" @selected((string) old('id_kategori') === (string) $category->id_kategori)>
+                                    {{ $category->nama_kategori }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span class="category-id-selection" id="dialog-kategori-help">Kategori belum ada? Tutup form ini, pilih <strong>Tambah Kategori</strong>, lalu kembali untuk memilihnya.</span>
+                        @error('id_kategori')<span class="form-field-error" id="dialog-kategori-error">{{ $message }}</span>@enderror
+                    </div>
+
+                    <div class="dialog-form-field">
+                        <label for="dialog-gambar">Foto Produk <span>(maks. 2 MB)</span></label>
+                        <input id="dialog-gambar" name="gambar" type="file" accept="image/*" aria-describedby="dialog-gambar-help">
+                        <span class="category-id-selection" id="dialog-gambar-help">Unggah foto produk dari perangkat.</span>
                         @error('gambar')<span class="form-field-error">{{ $message }}</span>@enderror
                     </div>
                 </div>

@@ -178,7 +178,7 @@
             data-product-dialog
             @if ($errors->any()) data-open-on-load @endif
         >
-            <form class="product-dialog-form" action="{{ route('stocks.store') }}" method="POST">
+            <form class="product-dialog-form stock-entry-form" action="{{ route('stocks.store') }}" method="POST">
                 @csrf
                 <h2 id="add-stock-title">Catat Stok Masuk</h2>
                 <p class="stock-dialog-hint">Jumlah yang dicatat akan ditambahkan ke stok produk saat ini.</p>
@@ -188,7 +188,7 @@
                 @endif
 
                 <div class="dialog-form-grid">
-                    <div class="dialog-form-field">
+                    <div class="dialog-form-field stock-product-field">
                         <label for="stock-product-search">Cari Produk</label>
                         <input id="stock-product-search" type="search" placeholder="Ketik nama produk..." autocomplete="off" data-stock-product-search>
                         <label for="stock-product-id">Produk</label>
@@ -202,17 +202,17 @@
                         </select>
                         @error('id_produk')<span class="form-field-error" id="stock-product-error">{{ $message }}</span>@enderror
                     </div>
-                    <div class="dialog-form-field">
+                    <div class="dialog-form-field stock-date-field">
                         <label for="stock-tanggal">Tanggal</label>
                         <input id="stock-tanggal" name="tanggal" type="date" value="{{ old('tanggal', now('Asia/Jakarta')->toDateString()) }}" required @if ($errors->has('tanggal')) aria-describedby="stock-date-error" @endif>
                         @error('tanggal')<span class="form-field-error" id="stock-date-error">{{ $message }}</span>@enderror
                     </div>
-                    <div class="dialog-form-field">
+                    <div class="dialog-form-field stock-quantity-field">
                         <label for="stock-jumlah">Jumlah Stok Masuk <span>(pcs)</span></label>
                         <input id="stock-jumlah" name="jumlah" type="number" min="1" max="2147483647" step="1" value="{{ old('jumlah') }}" placeholder="Contoh: 20" required @if ($errors->has('jumlah')) aria-describedby="stock-quantity-error" @endif>
                         @error('jumlah')<span class="form-field-error" id="stock-quantity-error">{{ $message }}</span>@enderror
                     </div>
-                    <div class="dialog-form-field">
+                    <div class="dialog-form-field stock-note-field">
                         <label for="stock-keterangan">Keterangan <span>(opsional, maks. 45 karakter)</span></label>
                         <input id="stock-keterangan" name="keterangan" type="text" maxlength="45" value="{{ old('keterangan') }}" placeholder="Contoh: Produksi pagi" @if ($errors->has('keterangan')) aria-describedby="stock-note-error" @endif>
                         @error('keterangan')<span class="form-field-error" id="stock-note-error">{{ $message }}</span>@enderror
