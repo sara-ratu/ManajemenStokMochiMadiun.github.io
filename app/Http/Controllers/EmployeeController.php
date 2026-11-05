@@ -46,6 +46,7 @@ class EmployeeController extends Controller
             'pendingShiftRequestCount' => ShiftChangeRequest::query()
                 ->where('status', ShiftChangeRequest::STATUS_PENDING)
                 ->count(),
+            'shifts' => Shift::query()->orderBy('nama_shift')->get(),
             'search' => $filters['q'] ?? '',
             'employeeCount' => User::query()->count(),
             'activeEmployeeCount' => User::query()->where('status', 'Aktif')->count(),
