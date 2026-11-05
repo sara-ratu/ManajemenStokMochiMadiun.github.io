@@ -2365,15 +2365,32 @@ body.login-page {
 }
 
 .cancel-form-link {
+    display: inline-flex;
+    min-width: 120px;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
     margin-right: auto;
-    color: #83777b;
+    padding: 0 18px;
+    border: 1px solid #f3a5b6;
+    border-radius: 10px;
+    background: #fff1f4;
+    color: #a63e59;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .cancel-form-link:hover {
-    color: #d94063;
+    border-color: #e8879d;
+    background: #ffe3e9;
+    color: #8f2f49;
+}
+
+.cancel-form-link:focus-visible {
+    outline: 3px solid rgb(237 91 123 / 28%);
+    outline-offset: 2px;
 }
 
 .stock-main {
