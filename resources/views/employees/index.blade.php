@@ -114,7 +114,7 @@
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>
                         <p class="products-subtitle">Informasi akun, peran, status, dan shift karyawan Mochi Madiun.</p>
                     </div>
-                    <a class="add-product-button" href="{{ route('employees.create') }}"><span aria-hidden="true">+</span>Tambah Karyawan</a>
+                    <button class="add-product-button" type="button" data-open-product-dialog="add-employee-dialog"><span aria-hidden="true">+</span>Tambah Karyawan</button>
                 </section>
 
                 <section class="stock-summary" aria-label="Ringkasan data karyawan">
@@ -224,6 +224,80 @@
             </main>
         </div>
     </div>
+    <dialog
+        class="product-dialog product-dialog-wide"
+        id="add-employee-dialog"
+        aria-labelledby="add-employee-dialog-title"
+        data-product-dialog
+        @if ($errors->any() && old('form_type') === 'employee') data-open-on-load @endif
+    >
+        <form class="product-dialog-form" action="{{ route('employees.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="form_type" value="employee">
+            <h2 id="add-employee-dialog-title">Tambah Karyawan</h2>
+
+            @if ($errors->any() && old('form_type') === 'employee')
+                <div class="dialog-validation-summary" role="alert">Periksa kembali data karyawan yang Anda masukkan.</div>
+            @endif
+
+            <div class="dialog-form-grid">
+                <div class="dialog-form-field">
+                    <label for="add-employee-name">Nama pengguna</label>
+                    <input id="add-employee-name" name="nama_lengkap" type="text" value="{{ old('form_type') === 'employee' ? old('nama_lengkap') : '' }}" maxlength="30" autocomplete="name" required>
+                    @if (old('form_type') === 'employee') @error('nama_lengkap')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-email">Email</label>
+                    <input id="add-employee-email" name="email" type="email" value="{{ old('form_type') === 'employee' ? old('email') : '' }}" maxlength="45" autocomplete="email" required>
+                    @if (old('form_type') === 'employee') @error('email')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-phone">Nomor telepon <span>(opsional)</span></label>
+                    <input id="add-employee-phone" name="no_telepon" type="tel" value="{{ old('form_type') === 'employee' ? old('no_telepon') : '' }}" maxlength="15" autocomplete="tel">
+                    @if (old('form_type') === 'employee') @error('no_telepon')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-shift">Shift <span>(opsional)</span></label>
+                    <select id="add-employee-shift" name="id_shift">
+                        <option value="">Belum ditentukan</option>
+                        @foreach ($shifts as $shift)
+                            <option value="{{ $shift->id_shift }}" @selected((string) (old('form_type') === 'employee' ? old('id_shift') : '') === (string) $shift->id_shift)>
+                                {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if (old('form_type') === 'employee') @error('id_shift')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-status">Status akun</label>
+                    <select id="add-employee-status" name="status" required>
+                        <option value="Aktif" @selected(old('form_type') !== 'employee' || old('status', 'Aktif') === 'Aktif')>Aktif</option>
+                        <option value="Tidak Aktif" @selected(old('form_type') === 'employee' && old('status') === 'Tidak Aktif')>Tidak Aktif</option>
+                    </select>
+                    @if (old('form_type') === 'employee') @error('status')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-address">Alamat <span>(opsional)</span></label>
+                    <input id="add-employee-address" name="alamat" type="text" value="{{ old('form_type') === 'employee' ? old('alamat') : '' }}" maxlength="100" autocomplete="street-address">
+                    @if (old('form_type') === 'employee') @error('alamat')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-password">Password</label>
+                    <input id="add-employee-password" name="password" type="password" minlength="8" maxlength="60" autocomplete="new-password" required>
+                    @if (old('form_type') === 'employee') @error('password')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                </div>
+                <div class="dialog-form-field">
+                    <label for="add-employee-role">Jabatan</label>
+                    <input id="add-employee-role" type="text" value="Kasir" readonly>
+                </div>
+            </div>
+
+            <div class="product-dialog-actions">
+                <button class="dialog-cancel-button" type="button" data-close-product-dialog>Batal</button>
+                <button class="dialog-submit-button" type="submit">Tambah Karyawan</button>
+            </div>
+        </form>
+    </dialog>
     @foreach ($employees as $employee)
         @if ($employee->role === 'Kasir')
             @php($editingEmployee = (string) old('edit_employee_id') === (string) $employee->id_user)
