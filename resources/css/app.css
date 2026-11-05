@@ -5750,3 +5750,53 @@ body.login-page {
     .dashboard-data-table td { padding: 8px 5px; font-size: 9px; }
     .dashboard-products-panel .dashboard-data-table td:first-child { white-space: normal; }
 }
+
+.history-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+}
+
+.history-tab {
+    flex: none;
+    padding: 8px 18px;
+    border: 1px solid #f1dce2;
+    border-radius: 999px;
+    background: #fff;
+    color: #74676b;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.history-tab:hover { border-color: #f2b8c7; }
+
+.history-tab.is-active {
+    border-color: #c84463;
+    background: #c84463;
+    color: #fff;
+}
+
+.sales-history-filter-field select {
+    min-height: 40px;
+    padding: 0 11px;
+    border: 1px solid #ead6dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #51434a;
+    font: inherit;
+    font-size: 12px;
+}
+
+.sale-status-badge.history-status-pending {
+    border-color: #edcf9f;
+    background: #fff8e9;
+    color: #946822;
+}
+
+.sale-status-badge.history-status-batal {
+    border-color: #f0c2c9;
+    background: #fff1f3;
+    color: #b14d60;
+}
