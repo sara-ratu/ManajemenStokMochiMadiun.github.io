@@ -189,9 +189,9 @@
                                         <td>
                                             @if ($employee->role === 'Kasir')
                                                 <div class="catalog-row-actions">
-                                                    <a class="catalog-icon-action catalog-edit-action" href="{{ route('employees.edit', $employee->id_user) }}" aria-label="Ubah {{ $employee->nama_lengkap }}" title="Ubah karyawan">
+                                                    <button class="catalog-icon-action catalog-edit-action" type="button" data-open-product-dialog="edit-employee-{{ $employee->id_user }}" aria-label="Ubah {{ $employee->nama_lengkap }}" title="Ubah karyawan">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
-                                                    </a>
+                                                    </button>
                                                     <form action="{{ route('employees.destroy', $employee->id_user) }}" method="POST" data-confirm-delete>
                                                         @csrf
                                                         @method('DELETE')
@@ -224,6 +224,90 @@
             </main>
         </div>
     </div>
+    @foreach ($employees as $employee)
+        @if ($employee->role === 'Kasir')
+            @php($editingEmployee = (string) old('edit_employee_id') === (string) $employee->id_user)
+            <dialog
+                class="product-dialog product-dialog-wide"
+                id="edit-employee-{{ $employee->id_user }}"
+                aria-labelledby="edit-employee-title-{{ $employee->id_user }}"
+                data-product-dialog
+                @if ($errors->any() && $editingEmployee) data-open-on-load @endif
+            >
+                <form class="product-dialog-form" action="{{ route('employees.update', $employee->id_user) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="edit_employee_id" value="{{ $employee->id_user }}">
+                    <h2 id="edit-employee-title-{{ $employee->id_user }}">Ubah Karyawan</h2>
+
+                    @if ($errors->any() && $editingEmployee)
+                        <div class="dialog-validation-summary" role="alert">Periksa kembali data karyawan yang Anda masukkan.</div>
+                    @endif
+
+                    <div class="dialog-form-grid">
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-id-{{ $employee->id_user }}">ID Karyawan</label>
+                            <input id="edit-employee-id-{{ $employee->id_user }}" type="text" value="{{ $employee->id_user }}" readonly>
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-name-{{ $employee->id_user }}">Nama pengguna</label>
+                            <input id="edit-employee-name-{{ $employee->id_user }}" name="nama_lengkap" type="text" value="{{ $editingEmployee ? old('nama_lengkap', $employee->nama_lengkap) : $employee->nama_lengkap }}" maxlength="30" autocomplete="name" required>
+                            @if ($editingEmployee) @error('nama_lengkap')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-email-{{ $employee->id_user }}">Email</label>
+                            <input id="edit-employee-email-{{ $employee->id_user }}" name="email" type="email" value="{{ $editingEmployee ? old('email', $employee->email) : $employee->email }}" maxlength="45" autocomplete="email" required>
+                            @if ($editingEmployee) @error('email')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-phone-{{ $employee->id_user }}">Nomor telepon <span>(opsional)</span></label>
+                            <input id="edit-employee-phone-{{ $employee->id_user }}" name="no_telepon" type="tel" value="{{ $editingEmployee ? old('no_telepon', $employee->no_telepon) : $employee->no_telepon }}" maxlength="15" autocomplete="tel">
+                            @if ($editingEmployee) @error('no_telepon')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-shift-{{ $employee->id_user }}">Shift <span>(opsional)</span></label>
+                            <select id="edit-employee-shift-{{ $employee->id_user }}" name="id_shift">
+                                <option value="">Belum ditentukan</option>
+                                @foreach ($shifts as $shift)
+                                    <option value="{{ $shift->id_shift }}" @selected((string) ($editingEmployee ? old('id_shift', $employee->id_shift) : $employee->id_shift) === (string) $shift->id_shift)>
+                                        {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if ($editingEmployee) @error('id_shift')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-status-{{ $employee->id_user }}">Status akun</label>
+                            <select id="edit-employee-status-{{ $employee->id_user }}" name="status" required>
+                                <option value="Aktif" @selected(($editingEmployee ? old('status', $employee->status) : $employee->status) === 'Aktif')>Aktif</option>
+                                <option value="Tidak Aktif" @selected(($editingEmployee ? old('status', $employee->status) : $employee->status) === 'Tidak Aktif')>Tidak Aktif</option>
+                            </select>
+                            @if ($editingEmployee) @error('status')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-address-{{ $employee->id_user }}">Alamat <span>(opsional)</span></label>
+                            <input id="edit-employee-address-{{ $employee->id_user }}" name="alamat" type="text" value="{{ $editingEmployee ? old('alamat', $employee->alamat) : $employee->alamat }}" maxlength="100" autocomplete="street-address">
+                            @if ($editingEmployee) @error('alamat')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-password-{{ $employee->id_user }}">Password <span>(kosongkan jika tidak diubah)</span></label>
+                            <input id="edit-employee-password-{{ $employee->id_user }}" name="password" type="password" minlength="8" maxlength="60" autocomplete="new-password">
+                            @if ($editingEmployee) @error('password')<span class="form-field-error">{{ $message }}</span>@enderror @endif
+                        </div>
+                        <div class="dialog-form-field">
+                            <label for="edit-employee-role-{{ $employee->id_user }}">Jabatan</label>
+                            <input id="edit-employee-role-{{ $employee->id_user }}" type="text" value="Kasir" readonly>
+                        </div>
+                    </div>
+
+                    <div class="product-dialog-actions">
+                        <button class="dialog-cancel-button" type="button" data-close-product-dialog>Batal</button>
+                        <button class="dialog-submit-button" type="submit">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </dialog>
+        @endif
+    @endforeach
     <dialog class="delete-confirm-dialog" aria-labelledby="employee-delete-title" aria-describedby="employee-delete-message" data-delete-dialog>
         <div class="delete-confirm-heading">
             <h2 id="employee-delete-title">Hapus Karyawan?</h2>

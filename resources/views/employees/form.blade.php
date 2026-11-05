@@ -57,11 +57,9 @@
             </header>
 
             <main class="products-main product-form-main">
-                <a class="profile-back-link" href="{{ route('employees.index') }}">‹ Kembali ke data karyawan</a>
                 <section class="products-heading">
                     <div>
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>
-                        <h1>{{ $editing ? 'Ubah Data Karyawan' : 'Tambah Karyawan' }}</h1>
                         <p class="products-subtitle">Kelola akun kasir dan informasi jadwal kerjanya.</p>
                     </div>
                 </section>

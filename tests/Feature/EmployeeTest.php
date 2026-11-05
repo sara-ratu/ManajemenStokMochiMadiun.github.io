@@ -197,10 +197,18 @@ class EmployeeTest extends TestCase
         $oldPassword = $cashier->password;
 
         $this->actingAs($admin)
+            ->get('/karyawan')
+            ->assertOk()
+            ->assertSee('data-open-product-dialog="edit-employee-2"', false)
+            ->assertSee('id="edit-employee-2"', false)
+            ->assertSee('Ubah Karyawan')
+            ->assertSee('Kasir Pagi');
+
+        $this->actingAs($admin)
             ->get('/karyawan/2/edit')
             ->assertOk()
-            ->assertSee('Ubah Data Karyawan')
-            ->assertSee('Kasir Pagi');
+            ->assertSee('Kasir Pagi')
+            ->assertDontSee('Ubah Data Karyawan');
 
         $this->actingAs($admin)
             ->put('/karyawan/2', [
