@@ -31,6 +31,12 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 Untuk dua perangkat, keduanya harus membuka aplikasi melalui alamat server yang sama dan dapat dijangkau di jaringan. `127.0.0.1` hanya menunjuk ke perangkat yang sedang digunakan.
 
+## Reset stok harian
+
+Stok semua produk direset menjadi 0 setiap pukul 00.00 WIB. Jumlah yang direset dicatat sebagai pengurangan dengan keterangan `Reset stok harian` pada riwayat stok. Pesanan yang masih `Pending` tidak diubah; stok tetap diperiksa lagi saat kasir menyelesaikan pesanan.
+
+Laravel Scheduler harus dijalankan agar reset otomatis bekerja. Di Windows, buat tugas di Task Scheduler untuk menjalankan `php artisan schedule:run` setiap menit, dengan direktori kerja proyek sebagai `Start in` dan PHP CLI XAMPP sebagai program. Perintah reset dapat dijalankan manual dengan `php artisan stok:reset-harian`.
+
 ## Gambar produk
 
 Setelah instalasi, jalankan `php artisan storage:link` agar gambar yang diunggah ke penyimpanan publik dapat diakses melalui `/storage`.

@@ -43,10 +43,18 @@ class EmployeeTest extends TestCase
     public function test_super_admin_can_view_employee_data_and_shift(): void
     {
         Schema::getConnection()->table('ms_shift')->insert([
-            'id_shift' => 1,
-            'nama_shift' => 'Pagi',
-            'jam_mulai' => '08:00:00',
-            'jam_selesai' => '16:00:00',
+            [
+                'id_shift' => 1,
+                'nama_shift' => 'Pagi',
+                'jam_mulai' => '08:00:00',
+                'jam_selesai' => '16:00:00',
+            ],
+            [
+                'id_shift' => 2,
+                'nama_shift' => 'Oncalling',
+                'jam_mulai' => null,
+                'jam_selesai' => null,
+            ],
         ]);
 
         $admin = User::query()->create([
@@ -67,6 +75,15 @@ class EmployeeTest extends TestCase
             'status' => 'Aktif',
             'role' => 'Kasir',
         ]);
+        User::query()->create([
+            'id_user' => 3,
+            'id_shift' => 2,
+            'nama_lengkap' => 'Kasir Oncalling',
+            'email' => 'oncalling@example.com',
+            'password' => Hash::make('secret-password'),
+            'status' => 'Aktif',
+            'role' => 'Kasir',
+        ]);
 
         $this->actingAs($admin)
             ->get('/karyawan')
@@ -76,9 +93,15 @@ class EmployeeTest extends TestCase
             ->assertSee('id="add-employee-dialog"', false)
             ->assertSee('name="form_type" value="employee"', false)
             ->assertSee('Kasir Mochi')
+            ->assertSee('Kasir Oncalling')
             ->assertSee('kasir@example.com')
             ->assertSee('08123456789')
+            ->assertSee('Karyawan Tetap · Pagi/Siang')
+            ->assertSee('Karyawan Part Timer · Oncalling')
+            ->assertSee('Karyawan Tetap')
+            ->assertSee('Karyawan Part Timer')
             ->assertSee('Pagi')
+            ->assertSee('Oncalling')
             ->assertSee('08:00–16:00')
             ->assertSee('Total Karyawan')
             ->assertSeeInOrder(['Beranda', 'Laporan Penjualan'])
@@ -187,7 +210,9 @@ class EmployeeTest extends TestCase
             ->assertSee('Nama pengguna')
             ->assertSee('Pagi')
             ->assertSee('Siang')
-            ->assertSee('Oncalling');
+            ->assertSee('Oncalling')
+            ->assertSee('Karyawan Tetap')
+            ->assertSee('Karyawan Part Timer');
 
         $this->actingAs($admin)
             ->post('/karyawan', [

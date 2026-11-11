@@ -112,12 +112,12 @@
                 <section class="products-heading stock-heading">
                     <div>
                         <p class="products-eyebrow">MANAJEMEN KARYAWAN</p>
-                        <p class="products-subtitle">Informasi akun, peran, status, dan shift karyawan Mochi Madiun.</p>
+                        <p class="products-subtitle">Karyawan tetap bertugas pada shift pagi atau siang, sedangkan karyawan part timer bertugas secara oncalling.</p>
                     </div>
                     <button class="add-product-button" type="button" data-open-product-dialog="add-employee-dialog"><span aria-hidden="true">+</span>Tambah Karyawan</button>
                 </section>
 
-                <section class="stock-summary" aria-label="Ringkasan data karyawan">
+                <section class="stock-summary employee-summary" aria-label="Ringkasan data karyawan">
                     <article class="stock-summary-card">
                         <span class="stock-summary-icon stock-summary-icon-pink" aria-hidden="true">
                             <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8m2 2a7 7 0 0 1 4 7"/></svg>
@@ -134,7 +134,13 @@
                         <span class="stock-summary-icon stock-summary-icon-purple" aria-hidden="true">
                             <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg>
                         </span>
-                        <div><span>Kasir</span><strong>{{ number_format($cashierCount, 0, ',', '.') }}</strong></div>
+                        <div><span>Karyawan Tetap · Pagi/Siang</span><strong>{{ number_format($permanentEmployeeCount, 0, ',', '.') }}</strong></div>
+                    </article>
+                    <article class="stock-summary-card">
+                        <span class="stock-summary-icon stock-summary-icon-purple" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0M19 4v5m-2.5-2.5h5"/></svg>
+                        </span>
+                        <div><span>Karyawan Part Timer · Oncalling</span><strong>{{ number_format($partTimeEmployeeCount, 0, ',', '.') }}</strong></div>
                     </article>
                 </section>
 
@@ -157,6 +163,7 @@
                                     <th scope="col">Email</th>
                                     <th scope="col">No. Telepon</th>
                                     <th scope="col">Jabatan</th>
+                                    <th scope="col">Kategori Karyawan</th>
                                     <th scope="col">Shift</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Aksi</th>
@@ -170,6 +177,7 @@
                                         <td>{{ $employee->email ?: '—' }}</td>
                                         <td>{{ $employee->no_telepon ?: '—' }}</td>
                                         <td>{{ $employee->role === 'SuperAdmin' ? 'Administrator' : ($employee->role ?: 'Belum diatur') }}</td>
+                                        <td>{{ $employee->role === 'Kasir' ? $employee->kategori_karyawan : '—' }}</td>
                                         <td>
                                             @if ($employee->shift)
                                                 {{ $employee->shift->nama_shift }}
@@ -207,7 +215,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="stock-empty-cell" colspan="8">
+                                        <td class="stock-empty-cell" colspan="9">
                                             <span aria-hidden="true">👥</span>
                                             <strong>{{ $search !== '' ? 'Karyawan tidak ditemukan' : 'Belum ada data karyawan' }}</strong>
                                             <span>{{ $search !== '' ? 'Coba kata pencarian lain.' : 'Akun karyawan yang terdaftar akan tampil di sini.' }}</span>
@@ -262,7 +270,7 @@
                         <option value="">Belum ditentukan</option>
                         @foreach ($shifts as $shift)
                             <option value="{{ $shift->id_shift }}" @selected((string) (old('form_type') === 'employee' ? old('id_shift') : '') === (string) $shift->id_shift)>
-                                {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
+                                {{ $shift->kategori_karyawan }} — {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -344,7 +352,7 @@
                                 <option value="">Belum ditentukan</option>
                                 @foreach ($shifts as $shift)
                                     <option value="{{ $shift->id_shift }}" @selected((string) ($editingEmployee ? old('id_shift', $employee->id_shift) : $employee->id_shift) === (string) $shift->id_shift)>
-                                        {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
+                                        {{ $shift->kategori_karyawan }} — {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
                                     </option>
                                 @endforeach
                             </select>

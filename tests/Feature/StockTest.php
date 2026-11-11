@@ -55,8 +55,8 @@ class StockTest extends TestCase
             $table->date('tanggal');
             $table->integer('jumlah');
             $table->string('keterangan', 45)->nullable();
-            $table->string('ms_user_id_user', 30);
-            $table->string('ms_produk_id_produk', 45);
+            $table->string('ms_user_id_user', 30)->nullable();
+            $table->string('ms_produk_id_produk', 45)->nullable();
         });
     }
 
@@ -184,6 +184,36 @@ class StockTest extends TestCase
 
         $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'stok' => 2147483647]);
         $this->assertDatabaseCount('tr_stok', 0);
+    }
+
+    public function test_daily_stock_reset_zeros_products_and_records_positive_stock_once(): void
+    {
+        $this->createCategory(1, 'Mochi Klasik');
+        $this->createProduct(1, 1, 'Mochi Stroberi', 15000, 8);
+        $this->createProduct(2, 1, 'Mochi Cokelat', 18000, 0);
+        $this->createProduct(3, 1, 'Mochi Pandan', 17000, null);
+
+        $this->artisan('stok:reset-harian')
+            ->expectsOutput('Stok harian berhasil direset untuk 1 produk.')
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('ms_produk', ['id_produk' => 1, 'stok' => 0]);
+        $this->assertDatabaseHas('ms_produk', ['id_produk' => 2, 'stok' => 0]);
+        $this->assertDatabaseHas('ms_produk', ['id_produk' => 3, 'stok' => 0]);
+        $this->assertDatabaseHas('tr_stok', [
+            'id_stok' => 1,
+            'id_produk' => '1',
+            'jumlah' => -8,
+            'keterangan' => 'Reset stok harian',
+            'ms_user_id_user' => null,
+        ]);
+        $this->assertDatabaseCount('tr_stok', 1);
+
+        $this->artisan('stok:reset-harian')
+            ->expectsOutput('Stok harian berhasil direset untuk 0 produk.')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('tr_stok', 1);
     }
 
     private function signIn(string $role = 'SuperAdmin'): void

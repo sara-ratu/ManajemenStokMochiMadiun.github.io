@@ -28,7 +28,8 @@ class EmployeeController extends Controller
                     $query->where('nama_lengkap', 'like', '%'.$search.'%')
                         ->orWhere('email', 'like', '%'.$search.'%')
                         ->orWhere('no_telepon', 'like', '%'.$search.'%')
-                        ->orWhere('role', 'like', '%'.$search.'%');
+                        ->orWhere('role', 'like', '%'.$search.'%')
+                        ->orWhereHas('shift', fn ($query) => $query->where('nama_shift', 'like', '%'.$search.'%'));
                 });
             })
             ->orderBy('nama_lengkap')
@@ -50,7 +51,14 @@ class EmployeeController extends Controller
             'search' => $filters['q'] ?? '',
             'employeeCount' => User::query()->count(),
             'activeEmployeeCount' => User::query()->where('status', 'Aktif')->count(),
-            'cashierCount' => User::query()->where('role', 'Kasir')->count(),
+            'permanentEmployeeCount' => User::query()
+                ->where('role', 'Kasir')
+                ->whereHas('shift', fn ($query) => $query->whereIn('nama_shift', ['Pagi', 'Siang']))
+                ->count(),
+            'partTimeEmployeeCount' => User::query()
+                ->where('role', 'Kasir')
+                ->whereHas('shift', fn ($query) => $query->where('nama_shift', 'Oncalling'))
+                ->count(),
         ]);
     }
 

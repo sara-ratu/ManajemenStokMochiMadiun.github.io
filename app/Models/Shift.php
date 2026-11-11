@@ -15,4 +15,13 @@ class Shift extends Model
     public $timestamps = false;
 
     protected $guarded = [];
+
+    public function getKategoriKaryawanAttribute(): string
+    {
+        return match (strtolower((string) $this->nama_shift)) {
+            'pagi', 'siang' => 'Karyawan Tetap',
+            'oncalling' => 'Karyawan Part Timer',
+            default => 'Kategori belum ditentukan',
+        };
+    }
 }

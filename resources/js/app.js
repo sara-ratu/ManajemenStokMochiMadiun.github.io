@@ -36,6 +36,22 @@ document.querySelectorAll('[data-live-clock]').forEach((clock) => {
     window.setInterval(updateClock, 1000);
 });
 
+document.querySelectorAll('[data-sales-sidebar-toggle]').forEach((toggle) => {
+    const sidebar = document.getElementById(toggle.getAttribute('aria-controls'));
+    const page = toggle.closest('body');
+
+    if (!(sidebar instanceof HTMLElement) || !(page instanceof HTMLElement)) {
+        return;
+    }
+
+    toggle.addEventListener('click', () => {
+        const isVisible = page.classList.toggle('sales-sidebar-visible');
+
+        toggle.setAttribute('aria-expanded', String(isVisible));
+        toggle.textContent = isVisible ? 'Sembunyikan sidebar' : 'Tampilkan sidebar';
+    });
+});
+
 document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
     toggle.addEventListener('click', () => {
         const password = document.querySelector('#password');

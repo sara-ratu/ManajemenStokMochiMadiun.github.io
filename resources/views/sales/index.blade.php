@@ -7,7 +7,7 @@
     <title>Transaksi Penjualan | Mochi Madiun</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="products-page catalog-page">
+<body class="products-page catalog-page @can('cashier') sales-register-page @endcan">
     <header class="catalog-topbar">
         <a class="catalog-brand" href="{{ route('dashboard') }}" aria-label="Beranda Mochi Madiun">
             <img class="mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="">
@@ -23,7 +23,7 @@
     </header>
 
     <div class="products-app-shell">
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="sales-sidebar">
             <p class="sidebar-section-label">MENU UTAMA</p>
             <nav class="sidebar-nav" aria-label="Navigasi utama">
                 <a class="sidebar-nav-link" href="{{ route('dashboard') }}">
@@ -70,7 +70,14 @@
 
         <div class="products-workspace">
             <header class="products-topbar">
-                <div class="topbar-page-label">{{ auth()->user()->can('cashier') ? 'Transaksi Penjualan' : 'Laporan Penjualan' }}</div>
+                <div class="sales-register-toolbar">
+                    <div class="topbar-page-label">{{ auth()->user()->can('cashier') ? 'Transaksi Penjualan' : 'Laporan Penjualan' }}</div>
+                    @can('cashier')
+                        <button class="sales-sidebar-toggle" type="button" data-sales-sidebar-toggle aria-controls="sales-sidebar" aria-expanded="false">
+                            Tampilkan sidebar
+                        </button>
+                    @endcan
+                </div>
                 <div class="products-account">
                     <span class="account-greeting">Halo, <strong>{{ auth()->user()->nama_lengkap ?: 'Pengguna' }}</strong></span>
                     <form action="{{ route('logout') }}" method="POST">

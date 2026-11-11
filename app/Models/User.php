@@ -71,6 +71,11 @@ class User extends Authenticatable
         return $this->belongsTo(Shift::class, 'id_shift', 'id_shift');
     }
 
+    public function getKategoriKaryawanAttribute(): string
+    {
+        return $this->shift?->kategori_karyawan ?? 'Belum ditentukan';
+    }
+
     public function shiftChangeRequests(): HasMany
     {
         return $this->hasMany(ShiftChangeRequest::class, 'id_user', 'id_user');

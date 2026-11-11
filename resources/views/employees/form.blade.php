@@ -103,7 +103,7 @@
                                     <option value="">Belum ditentukan</option>
                                     @foreach ($shifts as $shift)
                                         <option value="{{ $shift->id_shift }}" @selected((string) old('id_shift', $employee->id_shift) === (string) $shift->id_shift)>
-                                            {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
+                                            {{ $shift->kategori_karyawan }} — {{ $shift->nama_shift }}{{ $shift->jam_mulai && $shift->jam_selesai ? ' · '.\Illuminate\Support\Str::substr((string) $shift->jam_mulai, 0, 5).'–'.\Illuminate\Support\Str::substr((string) $shift->jam_selesai, 0, 5) : '' }}
                                         </option>
                                     @endforeach
                                 </select>
