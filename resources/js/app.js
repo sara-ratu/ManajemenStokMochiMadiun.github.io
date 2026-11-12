@@ -465,12 +465,20 @@ document.querySelectorAll('[data-customer-order-form]').forEach((form) => {
 document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) => {
     const statusUrl = statusCard.dataset.statusUrl;
     const statusLabel = statusCard.querySelector('[data-status-label]');
+    const statusHeading = statusCard.querySelector('[data-status-heading]');
     const statusMessage = statusCard.querySelector('[data-status-message]');
     const qrisSection = statusCard.querySelector('[data-customer-order-qris]');
+    const nextSteps = statusCard.querySelector('[data-customer-order-next-steps]');
+    const qrisLink = statusCard.querySelector('.customer-order-qris-link');
     const messages = {
-        Pending: 'Menunggu konfirmasi dari kasir.',
+        Pending: 'Setelah membayar, kasir akan memeriksa pesananmu dan memperbarui statusnya. Halaman ini diperbarui otomatis.',
         Batal: 'Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.',
         Selesai: 'Pesanan selesai. Terima kasih sudah berbelanja!',
+    };
+    const headings = {
+        Pending: 'Pesanan berhasil dikirim',
+        Batal: 'Pesanan dibatalkan',
+        Selesai: 'Pesanan selesai',
     };
 
     if (!statusUrl || !(statusLabel instanceof HTMLElement) || !(statusMessage instanceof HTMLElement)) {
@@ -486,9 +494,18 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         const order = await response.json();
         statusLabel.textContent = order.status === 'Pending' ? 'Menunggu' : order.status;
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
+        if (statusHeading instanceof HTMLElement) {
+            statusHeading.textContent = headings[order.status] ?? 'Status pesanan diperbarui';
+        }
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
         if (qrisSection instanceof HTMLElement) {
             qrisSection.hidden = order.status !== 'Pending';
+        }
+        if (nextSteps instanceof HTMLElement) {
+            nextSteps.hidden = order.status !== 'Pending';
+        }
+        if (qrisLink instanceof HTMLElement) {
+            qrisLink.hidden = order.status !== 'Pending';
         }
 
         if (['Batal', 'Selesai'].includes(order.status)) {

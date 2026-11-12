@@ -271,12 +271,19 @@ class SalesTest extends TestCase
         $trackResponse = $this->get($location)
             ->assertOk()
             ->assertSee('PESANAN #'.$order->id_pesanan)
-            ->assertSee('Menunggu konfirmasi dari kasir.')
+            ->assertSee('Pesanan berhasil dikirim')
+            ->assertSee('Langkah selanjutnya')
+            ->assertSee('tunai langsung di kasir')
+            ->assertSee('Tunjukkan nomor pesanan')
+            ->assertSee('Kasir akan memeriksa pembayaran')
             ->assertSee('Mochi Stroberi')
             ->assertSee('Bayar dengan QRIS')
+            ->assertSee('customer-order-qris')
+            ->assertSee('Rincian pesanan')
             ->assertSee('qris-merchant-sara-ratu.png')
             ->assertSee('Rp30.000')
-            ->assertSee('memeriksa transaksi masuk di akun merchant');
+            ->assertSee('Pembayaran belum terkonfirmasi otomatis')
+            ->assertSeeInOrder(['Langkah selanjutnya', 'Total pesanan', 'Bayar dengan QRIS', 'Rincian pesanan', 'Mochi Stroberi']);
 
         preg_match('/data-status-url="([^"]+)"/', $trackResponse->getContent(), $matches);
         $statusUrl = html_entity_decode($matches[1] ?? '');
