@@ -44,11 +44,26 @@ document.querySelectorAll('[data-sales-sidebar-toggle]').forEach((toggle) => {
         return;
     }
 
+    const updateToggleState = (isVisible) => {
+        toggle.setAttribute('aria-expanded', String(isVisible));
+        toggle.classList.toggle('is-visible', isVisible);
+    };
+
     toggle.addEventListener('click', () => {
         const isVisible = page.classList.toggle('sales-sidebar-visible');
+        updateToggleState(isVisible);
+    });
 
-        toggle.setAttribute('aria-expanded', String(isVisible));
-        toggle.textContent = isVisible ? 'Sembunyikan sidebar' : 'Tampilkan sidebar';
+    document.addEventListener('keydown', (event) => {
+        const isShortcut = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's';
+
+        if (!isShortcut) {
+            return;
+        }
+
+        event.preventDefault();
+        const isVisible = page.classList.toggle('sales-sidebar-visible');
+        updateToggleState(isVisible);
     });
 });
 

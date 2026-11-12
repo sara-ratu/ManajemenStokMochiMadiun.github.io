@@ -71,12 +71,14 @@
         <div class="products-workspace">
             <header class="products-topbar">
                 <div class="sales-register-toolbar">
-                    <div class="topbar-page-label">{{ auth()->user()->can('cashier') ? 'Transaksi Penjualan' : 'Laporan Penjualan' }}</div>
                     @can('cashier')
-                        <button class="sales-sidebar-toggle" type="button" data-sales-sidebar-toggle aria-controls="sales-sidebar" aria-expanded="false">
-                            Tampilkan sidebar
+                        <button class="sales-sidebar-toggle" type="button" data-sales-sidebar-toggle aria-controls="sales-sidebar" aria-expanded="false" aria-label="Toggle sidebar" aria-keyshortcuts="Ctrl+Shift+S" title="Toggle sidebar (Ctrl+Shift+S)">
+                            <span class="sales-sidebar-toggle-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16"/></svg>
+                            </span>
                         </button>
                     @endcan
+                    <div class="topbar-page-label">{{ auth()->user()->can('cashier') ? 'Transaksi Penjualan' : 'Laporan Penjualan' }}</div>
                 </div>
                 <div class="products-account">
                     <span class="account-greeting">Halo, <strong>{{ auth()->user()->nama_lengkap ?: 'Pengguna' }}</strong></span>

@@ -2753,27 +2753,69 @@ body.sales-register-page.sales-sidebar-visible .app-sidebar {
 }
 
 .sales-sidebar-toggle {
-    min-height: 34px;
-    padding: 6px 11px;
-    border: 1px solid #f0cbd4;
-    border-radius: 8px;
-    background: #fff7f9;
-    color: #b94360;
+    display: inline-flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgb(48 52 58 / 8%);
+    border-radius: 11px;
+    background: #f3f3f4;
+    box-shadow: none;
+    color: #2c2b30;
     cursor: pointer;
     font: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
 }
 
 .sales-sidebar-toggle:hover {
-    border-color: #ed91a7;
-    background: #ffedf1;
+    border-color: rgb(32 32 32 / 14%);
+    background: #eaeaec;
 }
 
 .sales-sidebar-toggle:focus-visible {
     outline: 3px solid rgb(237 91 123 / 25%);
     outline-offset: 2px;
+}
+
+.sales-sidebar-toggle-icon {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    color: #74767b;
+    flex-shrink: 0;
+}
+
+.sales-sidebar-toggle-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+    fill: none;
+}
+
+.sales-sidebar-toggle.is-visible .sales-sidebar-toggle-icon {
+    color: #b74762;
+}
+
+.sales-sidebar-toggle.is-visible {
+    background: #fff0f3;
+}
+
+.sales-sidebar-toggle.is-visible:hover {
+    background: #ffe6ec;
+}
+
+.sales-sidebar-toggle-icon svg rect {
+    stroke: currentColor;
+}
+
+.sales-sidebar-toggle-icon svg path {
+    stroke: currentColor;
 }
 
 body.sales-register-page .sales-main {
