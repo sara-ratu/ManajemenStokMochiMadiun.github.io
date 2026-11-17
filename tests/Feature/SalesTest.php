@@ -437,7 +437,10 @@ class SalesTest extends TestCase
             ->assertSee('Rp40.000')
             ->assertSee('Rp10.000')
             ->assertSee('Rp50.000')
-            ->assertSee('Cetak Struk');
+            ->assertSee('Cetak Struk')
+            ->assertSee('data-receipt-print', false)
+            ->assertSee('data-receipt-width', false)
+            ->assertSee('80 mm');
 
         $this->get('/transaksi-penjualan')
             ->assertOk()

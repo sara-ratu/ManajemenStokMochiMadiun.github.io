@@ -45,6 +45,12 @@ Enam belas foto produk tersedia di `storage/app/public/products`. Jika database 
 
 `ProductCatalogSeeder` hanya untuk mengisi atau memperbarui katalog awal pada database pengembangan baru; seeder tersebut juga mengatur harga dan stok produk yang cocok. Jangan jalankan pada database operasional tanpa memeriksa dampaknya terlebih dahulu.
 
+## Cetak struk thermal
+
+Pada halaman struk transaksi, pilih lebar kertas 58 mm atau 80 mm lalu tekan **Cetak Struk**. Dialog cetak browser akan menampilkan printer yang sudah tersedia di sistem operasi. Hubungkan printer USB dengan driver yang sesuai, atau pasangkan printer Bluetooth melalui pengaturan perangkat terlebih dahulu, lalu pilih printer tersebut pada dialog cetak. Pilih ukuran kertas yang sama di pengaturan printer.
+
+Browser web tidak dapat mengirim cetak senyap secara universal langsung ke perangkat USB atau Bluetooth. Tombol ini menggunakan dialog cetak bawaan browser; cetak otomatis tanpa dialog membutuhkan konfigurasi kiosk atau aplikasi/driver lokal khusus printer.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.

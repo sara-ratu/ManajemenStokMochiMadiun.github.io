@@ -1,5 +1,37 @@
 import './bootstrap';
 
+const receiptWidthControl = document.querySelector('[data-receipt-width]');
+const receiptPrintButton = document.querySelector('[data-receipt-print]');
+
+if (receiptWidthControl instanceof HTMLSelectElement) {
+    const savedWidth = window.localStorage.getItem('receipt-paper-width');
+    const initialWidth = savedWidth === '80' ? '80' : '58';
+
+    receiptWidthControl.value = initialWidth;
+    document.documentElement.dataset.receiptWidth = initialWidth;
+
+    receiptWidthControl.addEventListener('change', () => {
+        document.documentElement.dataset.receiptWidth = receiptWidthControl.value;
+        window.localStorage.setItem('receipt-paper-width', receiptWidthControl.value);
+    });
+}
+
+if (receiptPrintButton instanceof HTMLButtonElement) {
+    const printReceipt = () => {
+        window.print();
+    };
+
+    receiptPrintButton.addEventListener('click', printReceipt);
+
+    if (receiptPrintButton.dataset.autoPrint === 'true') {
+        window.addEventListener('load', () => {
+            window.setTimeout(() => {
+                printReceipt();
+            }, 500);
+        });
+    }
+}
+
 document.querySelectorAll('[data-live-clock]').forEach((clock) => {
     const dateFormatter = new Intl.DateTimeFormat('id-ID', {
         day: '2-digit',

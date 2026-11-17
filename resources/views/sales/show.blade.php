@@ -48,9 +48,6 @@
                 </div>
             </header>
             <main class="products-main sales-main">
-                @if (session('status'))
-                    <div class="action-notice action-notice-success" role="status">{{ session('status') }}</div>
-                @endif
                 <section class="sales-receipt-card">
                     <div class="sales-receipt-print-brand">
                         <img class="receipt-mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="Logo Mochi Madiun">
@@ -98,7 +95,14 @@
                     @endif
                     <div class="sales-receipt-actions">
                         <a class="sales-detail-link" href="{{ route('sales.index') }}">Kembali ke kasir</a>
-                        <button class="sales-checkout-button sales-print-button" type="button" onclick="window.print()">Cetak Struk</button>
+                        <label class="sales-receipt-width-control">
+                            <span>Lebar kertas</span>
+                            <select data-receipt-width aria-label="Lebar kertas struk">
+                                <option value="58">58 mm</option>
+                                <option value="80">80 mm</option>
+                            </select>
+                        </label>
+                        <button class="sales-checkout-button sales-print-button" type="button" data-receipt-print data-auto-print="true">Cetak Struk</button>
                     </div>
                 </section>
             </main>

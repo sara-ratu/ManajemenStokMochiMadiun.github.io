@@ -24,6 +24,37 @@
     box-sizing: border-box;
 }
 
+html {
+    background: #fbd0dc;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #fff8fa;
+    color: #555;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
 body.login-page {
     display: grid;
     min-width: 320px;
@@ -4340,10 +4371,37 @@ body.sales-register-page .sales-cart-items {
     font-size: 12px;
 }
 
+.sales-receipt-width-control {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #887d81;
+    font-size: 12px;
+}
+
+.sales-receipt-width-control select {
+    min-height: 37px;
+    padding: 0 9px;
+    border: 1px solid #e8dadd;
+    border-radius: 8px;
+    background: #fff;
+    color: #51464a;
+    font: inherit;
+}
+
 @media print {
     @page {
-        size: 58mm auto;
+        size: auto;
         margin: 0;
+    }
+
+    .sales-receipt-print-brand,
+    .sales-receipt-heading,
+    body .sales-receipt-meta,
+    .sales-receipt-table th,
+    .sales-receipt-table td {
+        border-bottom: 1px solid transparent;
+        border-image: repeating-linear-gradient(90deg, #777 0 2px, transparent 2px 5px) 1;
     }
 
     .catalog-topbar,
@@ -4353,12 +4411,20 @@ body.sales-register-page .sales-cart-items {
         display: none !important;
     }
 
+    html {
+        --receipt-print-width: 48mm;
+    }
+
+    html[data-receipt-width="80"] {
+        --receipt-print-width: 72mm;
+    }
+
     html,
     body,
     .products-app-shell,
     .products-workspace {
         display: block;
-        width: 58mm !important;
+        width: var(--receipt-print-width) !important;
         min-width: 0;
         min-height: 0;
         margin: 0 !important;
@@ -4376,28 +4442,25 @@ body.sales-register-page .sales-cart-items {
     }
 
     body .sales-main {
-        width: 58mm !important;
+        width: var(--receipt-print-width) !important;
         max-width: none;
         margin: 0 !important;
         padding: 0 !important;
     }
 
     .sales-receipt-card {
-        width: 58mm;
+        width: var(--receipt-print-width);
         max-width: none;
         margin: 0;
-        padding: 3mm;
+        padding: 3mm 3mm 15mm;
         border: 0;
         border-radius: 0;
         box-shadow: none;
     }
 
     .sales-receipt-print-brand {
-        display: grid;
-        justify-items: center;
-        gap: 1mm;
+        display: block;
         padding: 0 0 3mm;
-        border-bottom: 1px dashed #333;
         color: #111;
         text-align: center;
     }
@@ -4414,7 +4477,6 @@ body.sales-register-page .sales-cart-items {
 
     .sales-receipt-heading {
         padding: 2mm 0;
-        border-bottom: 1px dashed #777;
     }
 
     .sales-receipt-icon,
@@ -4425,23 +4487,23 @@ body.sales-register-page .sales-cart-items {
     }
 
     body .sales-receipt-meta {
-        grid-template-columns: 1fr;
-        gap: 1.5mm;
+        display: table;
+        width: 100%;
         padding: 2.5mm 0;
-        border-bottom: 1px dashed #777;
     }
 
     .sales-receipt-meta > div {
-        display: flex;
-        justify-content: space-between;
-        gap: 2mm;
+        display: table-row;
     }
 
     .sales-receipt-meta dt,
     .sales-receipt-meta dd {
+        display: table-cell;
+        padding: 0.5mm 0;
         color: #111;
         font-size: 9px;
         line-height: 1.3;
+        vertical-align: top;
     }
 
     .sales-receipt-meta dd {
@@ -4450,7 +4512,7 @@ body.sales-register-page .sales-cart-items {
     }
 
     .sales-receipt-print-order {
-        display: flex !important;
+        display: table-row !important;
     }
 
     .sales-receipt-meta .sale-status-badge {
@@ -4483,7 +4545,6 @@ body.sales-register-page .sales-cart-items {
     .sales-receipt-table th,
     .sales-receipt-table td {
         padding: 2mm 0;
-        border-bottom: 1px dashed #aaa;
         background: transparent;
         color: #111;
         font-size: 9px;
@@ -4517,22 +4578,34 @@ body.sales-register-page .sales-cart-items {
     }
 
     body .sales-receipt-total {
+        display: table;
+        width: 100%;
         padding: 3mm 0 1mm;
         color: #111;
         font-size: 10px;
     }
 
+    .sales-receipt-total span,
+    .sales-receipt-total strong {
+        display: table-cell;
+        vertical-align: top;
+    }
+
     .sales-receipt-total strong {
         color: #111;
         font-size: 12px;
+        text-align: right;
     }
 
     body .sales-receipt-payment {
-        flex-direction: column;
-        gap: 1mm;
+        display: block;
         padding: 0 0 2mm;
         color: #222;
         font-size: 8px;
+    }
+
+    .sales-receipt-payment span {
+        display: block;
     }
 }
 
@@ -6535,7 +6608,7 @@ body.sales-register-page .sales-cart-items {
 }
 
 @media print {
-    @page {
+    @page sales-report {
         margin: 12mm;
     }
 
@@ -6551,6 +6624,7 @@ body.sales-register-page .sales-cart-items {
     }
 
     body.sales-report-print-page {
+        page: sales-report;
         color: #222 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
