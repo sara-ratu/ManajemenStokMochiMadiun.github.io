@@ -48,10 +48,15 @@
                 </div>
             </header>
             <main class="products-main sales-main">
+                @php($receiptDate = \Illuminate\Support\Carbon::parse($order->tanggal)->timezone('Asia/Jakarta'))
+                @php($receiptQuantity = $details->sum('jumlah'))
+                @php($receiptSubtotal = $details->sum('sub_total'))
                 <section class="sales-receipt-card">
                     <div class="sales-receipt-print-brand">
                         <img class="receipt-mochi-logo" src="{{ asset('images/logo-mochi-madiun.png') }}" alt="Logo Mochi Madiun">
-                        <span>BUKTI TRANSAKSI</span>
+                        <strong>Mochi Madiun</strong>
+                        <span class="sales-receipt-address">Perumahan Widodo Kencono 1 blok B3, Pandean, Kec. Taman, Kota Madiun, Jawa Timur 63133</span>
+                        <span class="sales-receipt-phone">Telp. 0895-0893-7076</span>
                     </div>
                     <div class="sales-receipt-heading">
                         <span class="sales-receipt-icon" aria-hidden="true">✓</span>
@@ -60,39 +65,34 @@
                         <p>Pesanan <strong>#{{ $order->id_pesanan }}</strong> berhasil disimpan.</p>
                     </div>
                     <dl class="sales-receipt-meta">
-                        <div class="sales-receipt-print-order"><dt>No. Pesanan</dt><dd>#{{ $order->id_pesanan }}</dd></div>
-                        <div><dt>Tanggal</dt><dd>{{ \Illuminate\Support\Carbon::parse($order->tanggal)->locale('id')->translatedFormat('d F Y, H.i') }}</dd></div>
-                        <div><dt>Kasir</dt><dd>{{ $order->nama_kasir ?: 'Pengguna #'.$order->ms_user_id_user }}</dd></div>
-                        <div><dt>Status</dt><dd><span class="sale-status-badge">{{ $order->status }}</span></dd></div>
-                        @if ($payment)
-                            <div><dt>Metode Pembayaran</dt><dd>{{ $payment->metode }}</dd></div>
-                        @endif
+                        <div><dt>{{ $receiptDate->locale('id')->translatedFormat('d M Y') }}</dt><dd>Kasir</dd></div>
+                        <div><dt>{{ $receiptDate->format('H.i') }}</dt><dd>No. #{{ $order->id_pesanan }}</dd></div>
+                        <div><dt>Status: {{ $order->status }}</dt><dd>{{ $payment->metode ?? '-' }}</dd></div>
                     </dl>
-                    <div class="catalog-table-scroll">
-                        <table class="stock-table sales-receipt-table">
-                            <thead><tr><th scope="col">Produk</th><th scope="col">Harga</th><th scope="col">Jumlah</th><th scope="col">Subtotal</th></tr></thead>
-                            <tbody>
-                                @foreach ($details as $detail)
-                                    <tr>
-                                        <td class="stock-product-cell">
-                                            {{ $detail->nama_produk ?: 'Produk #'.$detail->id_produk }}
-                                            <span class="sales-receipt-item-detail">Rp{{ number_format((int) $detail->harga, 0, ',', '.') }} × {{ number_format((int) $detail->jumlah, 0, ',', '.') }} pcs</span>
-                                        </td>
-                                        <td>Rp{{ number_format((int) $detail->harga, 0, ',', '.') }}</td>
-                                        <td>{{ number_format((int) $detail->jumlah, 0, ',', '.') }} pcs</td>
-                                        <td class="sales-history-total">Rp{{ number_format((int) $detail->sub_total, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="sales-receipt-items">
+                        @foreach ($details as $detail)
+                            <div class="sales-receipt-item">
+                                <div class="sales-receipt-item-main">
+                                    <strong>{{ $loop->iteration }}. {{ $detail->nama_produk ?: 'Produk #'.$detail->id_produk }}</strong>
+                                    <strong>Rp {{ number_format((int) $detail->sub_total, 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="sales-receipt-item-detail">
+                                    <span>{{ number_format((int) $detail->jumlah, 0, ',', '.') }} x {{ number_format((int) $detail->harga, 0, ',', '.') }}</span>
+                                    <span>Rp {{ number_format((int) $detail->sub_total, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="sales-receipt-total"><span>Total Dibayar</span><strong>Rp{{ number_format((int) $order->total, 0, ',', '.') }}</strong></div>
-                    @if ($payment)
-                        <div class="sales-receipt-payment">
-                            <span>Jumlah diterima: Rp{{ number_format((int) $payment->jumlah, 0, ',', '.') }}</span>
-                            <span>Kembalian: Rp{{ number_format(max((int) $payment->jumlah - (int) $order->total, 0), 0, ',', '.') }}</span>
-                        </div>
-                    @endif
+                    <div class="sales-receipt-summary">
+                        <div class="sales-receipt-summary-row"><span>Total QTY : {{ number_format((int) $receiptQuantity, 0, ',', '.') }}</span></div>
+                        <div class="sales-receipt-summary-row"><span>Sub Total</span><span>Rp {{ number_format((int) $receiptSubtotal, 0, ',', '.') }}</span></div>
+                        <div class="sales-receipt-summary-row sales-receipt-grand-total"><strong>Total</strong><strong>Rp {{ number_format((int) $order->total, 0, ',', '.') }}</strong></div>
+                        @if ($payment)
+                            <div class="sales-receipt-summary-row"><span>Bayar ({{ $payment->metode }})</span><span>Rp {{ number_format((int) $payment->jumlah, 0, ',', '.') }}</span></div>
+                            <div class="sales-receipt-summary-row"><span>Kembali</span><span>Rp {{ number_format(max((int) $payment->jumlah - (int) $order->total, 0), 0, ',', '.') }}</span></div>
+                        @endif
+                    </div>
+                    <div class="sales-receipt-thanks">Terima kasih telah berbelanja</div>
                     <div class="sales-receipt-actions">
                         <a class="sales-detail-link" href="{{ route('sales.index') }}">Kembali ke kasir</a>
                         <label class="sales-receipt-width-control">
@@ -102,7 +102,7 @@
                                 <option value="80">80 mm</option>
                             </select>
                         </label>
-                        <button class="sales-checkout-button sales-print-button" type="button" data-receipt-print data-auto-print="true">Cetak Struk</button>
+                        <button class="sales-checkout-button sales-print-button" type="button" data-receipt-print>Cetak Struk</button>
                     </div>
                 </section>
             </main>

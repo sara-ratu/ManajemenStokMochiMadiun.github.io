@@ -19,6 +19,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 Route::get('/pesan', [CustomerOrderController::class, 'create'])->name('customer-orders.create');
 Route::post('/pesan', [CustomerOrderController::class, 'store'])->name('customer-orders.store');
+Route::get('/pesanan', [CustomerOrderController::class, 'create'])->name('customer-orders.menu');
 Route::get('/pesanan/{order}', [CustomerOrderController::class, 'track'])
     ->whereNumber('order')
     ->middleware('signed')

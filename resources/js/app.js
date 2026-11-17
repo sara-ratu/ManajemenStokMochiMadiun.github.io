@@ -17,19 +17,9 @@ if (receiptWidthControl instanceof HTMLSelectElement) {
 }
 
 if (receiptPrintButton instanceof HTMLButtonElement) {
-    const printReceipt = () => {
+    receiptPrintButton.addEventListener('click', () => {
         window.print();
-    };
-
-    receiptPrintButton.addEventListener('click', printReceipt);
-
-    if (receiptPrintButton.dataset.autoPrint === 'true') {
-        window.addEventListener('load', () => {
-            window.setTimeout(() => {
-                printReceipt();
-            }, 500);
-        });
-    }
+    });
 }
 
 document.querySelectorAll('[data-live-clock]').forEach((clock) => {
@@ -514,13 +504,12 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
     const statusLabel = statusCard.querySelector('[data-status-label]');
     const statusHeading = statusCard.querySelector('[data-status-heading]');
     const statusMessage = statusCard.querySelector('[data-status-message]');
-    const qrisSection = statusCard.querySelector('[data-customer-order-qris]');
     const nextSteps = statusCard.querySelector('[data-customer-order-next-steps]');
-    const qrisLink = statusCard.querySelector('.customer-order-qris-link');
+    const completedUrl = statusCard.dataset.completedUrl;
     const messages = {
-        Pending: 'Setelah membayar, kasir akan memeriksa pesananmu dan memperbarui statusnya. Halaman ini diperbarui otomatis.',
+        Pending: 'Bayar langsung kepada kasir. Status pesanan ini diperbarui otomatis setelah pembayaran dikonfirmasi.',
         Batal: 'Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.',
-        Selesai: 'Pesanan selesai. Terima kasih sudah berbelanja!',
+        Selesai: 'Pembayaran dikonfirmasi. Mengalihkan ke menu pesanan...',
     };
     const headings = {
         Pending: 'Pesanan berhasil dikirim',
@@ -545,17 +534,16 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
             statusHeading.textContent = headings[order.status] ?? 'Status pesanan diperbarui';
         }
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
-        if (qrisSection instanceof HTMLElement) {
-            qrisSection.hidden = order.status !== 'Pending';
-        }
         if (nextSteps instanceof HTMLElement) {
             nextSteps.hidden = order.status !== 'Pending';
         }
-        if (qrisLink instanceof HTMLElement) {
-            qrisLink.hidden = order.status !== 'Pending';
-        }
 
-        if (['Batal', 'Selesai'].includes(order.status)) {
+        if (order.status === 'Selesai') {
+            window.clearInterval(statusPoll);
+            if (completedUrl) {
+                window.setTimeout(() => window.location.assign(completedUrl), 2000);
+            }
+        } else if (order.status === 'Batal') {
             window.clearInterval(statusPoll);
         }
     };
@@ -564,7 +552,12 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         updateStatus().catch((error) => console.error(error));
     }, 8000);
 
-    if (['Batal', 'Selesai'].includes(statusLabel.textContent.trim())) {
+    if (statusLabel.textContent.trim() === 'Selesai') {
+        window.clearInterval(statusPoll);
+        if (completedUrl) {
+            window.setTimeout(() => window.location.assign(completedUrl), 2000);
+        }
+    } else if (statusLabel.textContent.trim() === 'Batal') {
         window.clearInterval(statusPoll);
     }
 });

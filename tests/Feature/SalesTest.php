@@ -273,17 +273,20 @@ class SalesTest extends TestCase
             ->assertSee('PESANAN #'.$order->id_pesanan)
             ->assertSee('Pesanan berhasil dikirim')
             ->assertSee('Langkah selanjutnya')
-            ->assertSee('tunai langsung di kasir')
+            ->assertSee('langsung kepada kasir')
             ->assertSee('Tunjukkan nomor pesanan')
             ->assertSee('Kasir akan memeriksa pembayaran')
             ->assertSee('Mochi Stroberi')
-            ->assertSee('Bayar dengan QRIS')
-            ->assertSee('customer-order-qris')
+            ->assertSee('data-completed-url="'.route('customer-orders.menu').'"', false)
+            ->assertDontSee('QRIS')
+            ->assertDontSee('customer-order-qris')
             ->assertSee('Rincian pesanan')
-            ->assertSee('qris-merchant-sara-ratu.png')
             ->assertSee('Rp30.000')
-            ->assertSee('Pembayaran belum terkonfirmasi otomatis')
-            ->assertSeeInOrder(['Langkah selanjutnya', 'Total pesanan', 'Bayar dengan QRIS', 'Rincian pesanan', 'Mochi Stroberi']);
+            ->assertSeeInOrder(['Langkah selanjutnya', 'Total pesanan', 'Rincian pesanan', 'Mochi Stroberi']);
+
+        $this->get('/pesanan')
+            ->assertOk()
+            ->assertSee('PESAN ONLINE');
 
         preg_match('/data-status-url="([^"]+)"/', $trackResponse->getContent(), $matches);
         $statusUrl = html_entity_decode($matches[1] ?? '');
@@ -434,11 +437,16 @@ class SalesTest extends TestCase
             ->assertOk()
             ->assertSee('TRANSAKSI BERHASIL')
             ->assertSee('Mochi Stroberi')
-            ->assertSee('Rp40.000')
-            ->assertSee('Rp10.000')
-            ->assertSee('Rp50.000')
+            ->assertSee('Rp 40.000')
+            ->assertSee('Rp 10.000')
+            ->assertSee('Rp 50.000')
+            ->assertSee('Total QTY : 3')
+            ->assertSee('Sub Total')
+            ->assertSee('Kembali')
+            ->assertSee('Terima kasih telah berbelanja')
             ->assertSee('Cetak Struk')
             ->assertSee('data-receipt-print', false)
+            ->assertDontSee('data-auto-print', false)
             ->assertSee('data-receipt-width', false)
             ->assertSee('80 mm');
 
