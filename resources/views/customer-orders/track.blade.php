@@ -31,7 +31,7 @@
             </h1>
             <p class="customer-order-status-message" data-status-message>
                 @if ($customerOrder->status === 'Pending')
-                    Bayar langsung kepada kasir. Status pesanan ini diperbarui otomatis setelah pembayaran dikonfirmasi.
+                    Bayar menggunakan QRIS di bawah atau tunai kepada kasir. Status pesanan ini diperbarui otomatis setelah pembayaran dikonfirmasi.
                 @elseif ($customerOrder->status === 'Batal')
                     Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.
                 @elseif ($customerOrder->status === 'Selesai')
@@ -43,7 +43,7 @@
                 <section class="customer-order-next-steps" data-customer-order-next-steps aria-labelledby="customer-order-next-steps-title">
                     <h2 id="customer-order-next-steps-title">Langkah selanjutnya</h2>
                     <ol>
-                        <li>Bayar <strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong> langsung kepada kasir.</li>
+                        <li>Bayar <strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong> menggunakan QRIS di bawah atau tunai kepada kasir.</li>
                         <li>Tunjukkan nomor pesanan <strong>#{{ $customerOrder->id_pesanan }}</strong> kepada kasir.</li>
                         <li>Kasir akan memeriksa pembayaran dan mengonfirmasi pesananmu.</li>
                     </ol>
@@ -54,6 +54,15 @@
                 <span>Total pesanan</span>
                 <strong>Rp{{ number_format((int) $customerOrder->total, 0, ',', '.') }}</strong>
             </div>
+
+            @if ($customerOrder->status === 'Pending')
+                <section class="customer-order-qris" data-customer-order-qris aria-labelledby="customer-order-qris-title">
+                    <h2 id="customer-order-qris-title">Bayar dengan QRIS</h2>
+                    <p>Pindai QRIS ini melalui aplikasi pembayaran dan masukkan nominal tepat seperti total pesanan di atas.</p>
+                    <img src="{{ asset('images/qris-merchant-sara-ratu.png') }}" alt="QRIS merchant Mochi Madiun">
+                    <p class="customer-order-qris-warning">Pesanan baru dianggap dibayar setelah kasir memeriksa transaksi masuk di akun merchant. Simpan bukti pembayaran sampai pesanan dikonfirmasi.</p>
+                </section>
+            @endif
 
             <section class="customer-order-order-details" aria-labelledby="customer-order-details-title">
                 <h2 id="customer-order-details-title">Rincian pesanan</h2>
