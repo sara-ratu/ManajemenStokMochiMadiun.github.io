@@ -205,7 +205,6 @@
                             <label for="sales-payment-method">Metode Pembayaran</label>
                             <select id="sales-payment-method" name="metode" required>
                                 <option value="Tunai" @selected(old('metode', 'Tunai') === 'Tunai')>Tunai</option>
-                                <option value="Transfer" @selected(old('metode') === 'Transfer')>Transfer</option>
                                 <option value="QRIS" @selected(old('metode') === 'QRIS')>QRIS</option>
                             </select>
                             <label for="sales-amount-paid">Jumlah Dibayar (Rp)</label>

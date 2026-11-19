@@ -231,7 +231,7 @@ class CustomerOrderController extends Controller
     public function complete(Request $request, int $order, SaleProcessor $saleProcessor): RedirectResponse
     {
         $data = $request->validate([
-            'metode' => ['required', 'in:Tunai,Transfer,QRIS'],
+            'metode' => ['required', 'in:Tunai,QRIS'],
             'jumlah_bayar' => ['required', 'integer', 'min:0', 'max:2147483647'],
         ]);
 

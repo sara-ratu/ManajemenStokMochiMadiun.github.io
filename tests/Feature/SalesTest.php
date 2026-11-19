@@ -112,6 +112,7 @@ class SalesTest extends TestCase
             ->assertSee('Rp15.000')
             ->assertSee('Keranjang')
             ->assertSee('Metode Pembayaran')
+            ->assertDontSee('Transfer')
             ->assertDontSee('Riwayat Transaksi')
             ->assertDontSee('sales-history-table', false);
     }
@@ -323,10 +324,18 @@ class SalesTest extends TestCase
             ->assertOk()
             ->assertSee('Mochi Stroberi')
             ->assertSee('Order #'.$order->id_pesanan);
+        $this->get('/order-pelanggan/'.$order->id_pesanan)
+            ->assertOk()
+            ->assertDontSee('Transfer');
         $this->getJson('/order-pelanggan/notifikasi')
             ->assertOk()
             ->assertJsonPath('pending_count', 1)
             ->assertJsonPath('latest_order_id', $order->id_pesanan);
+
+        $this->from('/order-pelanggan/'.$order->id_pesanan)->post('/order-pelanggan/'.$order->id_pesanan.'/selesaikan', [
+            'metode' => 'Transfer',
+            'jumlah_bayar' => 30000,
+        ])->assertRedirect('/order-pelanggan/'.$order->id_pesanan)->assertSessionHasErrors('metode');
 
         $this->post('/order-pelanggan/'.$order->id_pesanan.'/selesaikan', [
             'metode' => 'Tunai',
@@ -508,7 +517,7 @@ class SalesTest extends TestCase
                 ['id_produk' => 1, 'jumlah' => 1],
                 ['id_produk' => 1, 'jumlah' => 1],
             ],
-            'metode' => 'Bitcoin',
+            'metode' => 'Transfer',
             'jumlah_bayar' => 30000,
         ])->assertRedirect('/transaksi-penjualan')
             ->assertSessionHasErrors(['items.1.id_produk', 'metode']);

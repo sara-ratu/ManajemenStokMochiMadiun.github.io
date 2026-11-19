@@ -69,7 +69,6 @@
                             <label for="order-payment-method">Metode pembayaran</label>
                             <select id="order-payment-method" name="metode" required>
                                 <option value="Tunai">Tunai</option>
-                                <option value="Transfer">Transfer</option>
                                 <option value="QRIS">QRIS</option>
                             </select>
                             <label for="order-amount-paid">Jumlah dibayar (Rp)</label>

@@ -77,7 +77,7 @@ class SalesController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.id_produk' => ['required', 'integer', 'distinct'],
             'items.*.jumlah' => ['required', 'integer', 'min:1', 'max:2147483647'],
-            'metode' => ['required', 'in:Tunai,Transfer,QRIS'],
+            'metode' => ['required', 'in:Tunai,QRIS'],
             'jumlah_bayar' => ['required', 'integer', 'min:0', 'max:2147483647'],
         ], [
             'items.required' => 'Tambahkan setidaknya satu produk ke keranjang.',
