@@ -1,5 +1,66 @@
 import './bootstrap';
 
+document.querySelectorAll('.products-app-shell').forEach((shell, index) => {
+    const sidebar = shell.querySelector('.app-sidebar');
+
+    if (!(sidebar instanceof HTMLElement) || document.querySelector('[data-sales-sidebar-toggle]')) {
+        return;
+    }
+
+    const sidebarId = sidebar.id || `app-sidebar-${index + 1}`;
+    sidebar.id = sidebarId;
+
+    const chevronLeft = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>';
+    const chevronRight = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
+    const collapseButton = document.createElement('button');
+    collapseButton.type = 'button';
+    collapseButton.className = 'sidebar-collapse';
+    collapseButton.setAttribute('aria-controls', sidebarId);
+    collapseButton.setAttribute('aria-label', 'Sembunyikan menu navigasi');
+    collapseButton.title = 'Sembunyikan menu navigasi';
+    collapseButton.innerHTML = chevronLeft;
+    sidebar.prepend(collapseButton);
+
+    const expandButton = document.createElement('button');
+    expandButton.type = 'button';
+    expandButton.className = 'sidebar-toggle';
+    expandButton.setAttribute('aria-controls', sidebarId);
+    expandButton.setAttribute('aria-label', 'Tampilkan menu navigasi');
+    expandButton.title = 'Tampilkan menu navigasi';
+    expandButton.innerHTML = chevronRight;
+    shell.append(expandButton);
+
+    const updateSidebar = (isExpanded) => {
+        sidebar.hidden = !isExpanded;
+        expandButton.hidden = isExpanded;
+        expandButton.setAttribute('aria-expanded', String(isExpanded));
+        collapseButton.setAttribute('aria-expanded', String(isExpanded));
+    };
+
+    let isExpanded = true;
+    try {
+        isExpanded = window.localStorage.getItem('app-sidebar-hidden') !== 'true';
+    } catch (error) {
+        console.warn('Preferensi sidebar tidak dapat dibaca dari penyimpanan browser.', error);
+    }
+
+    const setExpanded = (value) => {
+        isExpanded = value;
+        updateSidebar(isExpanded);
+
+        try {
+            window.localStorage.setItem('app-sidebar-hidden', String(!isExpanded));
+        } catch (error) {
+            console.warn('Preferensi sidebar tidak dapat disimpan di penyimpanan browser.', error);
+        }
+    };
+
+    updateSidebar(isExpanded);
+    collapseButton.addEventListener('click', () => setExpanded(false));
+    expandButton.addEventListener('click', () => setExpanded(true));
+});
+
 const receiptWidthControl = document.querySelector('[data-receipt-width]');
 const receiptPrintButton = document.querySelector('[data-receipt-print]');
 

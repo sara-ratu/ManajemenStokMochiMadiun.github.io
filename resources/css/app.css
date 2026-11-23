@@ -6750,3 +6750,89 @@ body.sales-register-page .sales-cart-items {
         font-size: 9pt;
     }
 }
+
+.products-app-shell > .app-sidebar[hidden] {
+    display: none;
+}
+
+.app-sidebar {
+    z-index: 4;
+}
+
+.sidebar-collapse {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    right: -14px;
+    display: grid;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #f1dce2;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgb(118 65 78 / 12%);
+    color: #d94063;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    z-index: 20;
+    top: 96px;
+    left: 0;
+    display: grid;
+    width: 24px;
+    height: 48px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #f1dce2;
+    border-left: 0;
+    border-radius: 0 12px 12px 0;
+    background: #fff;
+    box-shadow: 2px 2px 6px rgb(118 65 78 / 12%);
+    color: #d94063;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.sidebar-collapse:hover,
+.sidebar-toggle:hover {
+    border-color: #efb6c4;
+    background: #fff0f4;
+}
+
+.sidebar-collapse:focus-visible,
+.sidebar-toggle:focus-visible {
+    outline: 3px solid rgb(217 64 99 / 30%);
+    outline-offset: 2px;
+}
+
+.sidebar-toggle[hidden] {
+    display: none;
+}
+
+.sidebar-collapse svg,
+.sidebar-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.4;
+}
+
+@media print {
+    .sidebar-collapse,
+    .sidebar-toggle {
+        display: none !important;
+    }
+}
+
+.customer-order-page .catalog-brand small {
+    font-size: clamp(16px, 3vw, 22px);
+    font-weight: 700;
+}
