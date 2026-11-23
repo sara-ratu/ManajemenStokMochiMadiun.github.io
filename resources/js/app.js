@@ -1,65 +1,26 @@
 import './bootstrap';
 
-document.querySelectorAll('.products-app-shell').forEach((shell, index) => {
-    const sidebar = shell.querySelector('.app-sidebar');
+const receiptWidthControl = document.querySelector('[data-receipt-width]');
+const receiptPrintButton = document.querySelector('[data-receipt-print]');
 
-    if (!(sidebar instanceof HTMLElement)) {
-        return;
-    }
+if (receiptWidthControl instanceof HTMLSelectElement) {
+    const savedWidth = window.localStorage.getItem('receipt-paper-width');
+    const initialWidth = savedWidth === '80' ? '80' : '58';
 
-    const sidebarId = sidebar.id || `app-sidebar-${index + 1}`;
-    sidebar.id = sidebarId;
+    receiptWidthControl.value = initialWidth;
+    document.documentElement.dataset.receiptWidth = initialWidth;
 
-    const chevronLeft = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>';
-    const chevronRight = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+    receiptWidthControl.addEventListener('change', () => {
+        document.documentElement.dataset.receiptWidth = receiptWidthControl.value;
+        window.localStorage.setItem('receipt-paper-width', receiptWidthControl.value);
+    });
+}
 
-    const collapseButton = document.createElement('button');
-    collapseButton.type = 'button';
-    collapseButton.className = 'sidebar-collapse';
-    collapseButton.setAttribute('aria-controls', sidebarId);
-    collapseButton.setAttribute('aria-label', 'Sembunyikan menu navigasi');
-    collapseButton.title = 'Sembunyikan menu navigasi';
-    collapseButton.innerHTML = chevronLeft;
-    sidebar.prepend(collapseButton);
-
-    const expandButton = document.createElement('button');
-    expandButton.type = 'button';
-    expandButton.className = 'sidebar-toggle';
-    expandButton.setAttribute('aria-controls', sidebarId);
-    expandButton.setAttribute('aria-label', 'Tampilkan menu navigasi');
-    expandButton.title = 'Tampilkan menu navigasi';
-    expandButton.innerHTML = chevronRight;
-    shell.append(expandButton);
-
-    const updateSidebar = (isExpanded) => {
-        sidebar.hidden = !isExpanded;
-        expandButton.hidden = isExpanded;
-        expandButton.setAttribute('aria-expanded', String(isExpanded));
-        collapseButton.setAttribute('aria-expanded', String(isExpanded));
-    };
-
-    let isExpanded = true;
-    try {
-        isExpanded = window.localStorage.getItem('app-sidebar-hidden') !== 'true';
-    } catch (error) {
-        console.warn('Preferensi sidebar tidak dapat dibaca dari penyimpanan browser.', error);
-    }
-
-    const setExpanded = (value) => {
-        isExpanded = value;
-        updateSidebar(isExpanded);
-
-        try {
-            window.localStorage.setItem('app-sidebar-hidden', String(!isExpanded));
-        } catch (error) {
-            console.warn('Preferensi sidebar tidak dapat disimpan di penyimpanan browser.', error);
-        }
-    };
-
-    updateSidebar(isExpanded);
-    collapseButton.addEventListener('click', () => setExpanded(false));
-    expandButton.addEventListener('click', () => setExpanded(true));
-});
+if (receiptPrintButton instanceof HTMLButtonElement) {
+    receiptPrintButton.addEventListener('click', () => {
+        window.print();
+    });
+}
 
 document.querySelectorAll('[data-live-clock]').forEach((clock) => {
     const dateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -95,6 +56,37 @@ document.querySelectorAll('[data-live-clock]').forEach((clock) => {
 
     updateClock();
     window.setInterval(updateClock, 1000);
+});
+
+document.querySelectorAll('[data-sales-sidebar-toggle]').forEach((toggle) => {
+    const sidebar = document.getElementById(toggle.getAttribute('aria-controls'));
+    const page = toggle.closest('body');
+
+    if (!(sidebar instanceof HTMLElement) || !(page instanceof HTMLElement)) {
+        return;
+    }
+
+    const updateToggleState = (isVisible) => {
+        toggle.setAttribute('aria-expanded', String(isVisible));
+        toggle.classList.toggle('is-visible', isVisible);
+    };
+
+    toggle.addEventListener('click', () => {
+        const isVisible = page.classList.toggle('sales-sidebar-visible');
+        updateToggleState(isVisible);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const isShortcut = (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 's';
+
+        if (!isShortcut) {
+            return;
+        }
+
+        event.preventDefault();
+        const isVisible = page.classList.toggle('sales-sidebar-visible');
+        updateToggleState(isVisible);
+    });
 });
 
 document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
@@ -510,12 +502,19 @@ document.querySelectorAll('[data-customer-order-form]').forEach((form) => {
 document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) => {
     const statusUrl = statusCard.dataset.statusUrl;
     const statusLabel = statusCard.querySelector('[data-status-label]');
+    const statusHeading = statusCard.querySelector('[data-status-heading]');
     const statusMessage = statusCard.querySelector('[data-status-message]');
-    const qrisSection = statusCard.querySelector('[data-customer-order-qris]');
+    const nextSteps = statusCard.querySelector('[data-customer-order-next-steps]');
+    const completedUrl = statusCard.dataset.completedUrl;
     const messages = {
-        Pending: 'Menunggu konfirmasi dari kasir.',
+        Pending: 'Bayar langsung kepada kasir. Status pesanan ini diperbarui otomatis setelah pembayaran dikonfirmasi.',
         Batal: 'Pesanan dibatalkan oleh kasir. Silakan hubungi kasir jika perlu.',
-        Selesai: 'Pesanan selesai. Terima kasih sudah berbelanja!',
+        Selesai: 'Pembayaran dikonfirmasi. Mengalihkan ke menu pesanan...',
+    };
+    const headings = {
+        Pending: 'Pesanan berhasil dikirim',
+        Batal: 'Pesanan dibatalkan',
+        Selesai: 'Pesanan selesai',
     };
 
     if (!statusUrl || !(statusLabel instanceof HTMLElement) || !(statusMessage instanceof HTMLElement)) {
@@ -531,12 +530,20 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         const order = await response.json();
         statusLabel.textContent = order.status === 'Pending' ? 'Menunggu' : order.status;
         statusLabel.className = `customer-order-status-pill customer-order-status-${order.status.toLocaleLowerCase('id-ID')}`;
+        if (statusHeading instanceof HTMLElement) {
+            statusHeading.textContent = headings[order.status] ?? 'Status pesanan diperbarui';
+        }
         statusMessage.textContent = messages[order.status] ?? 'Status pesanan diperbarui.';
-        if (qrisSection instanceof HTMLElement) {
-            qrisSection.hidden = order.status !== 'Pending';
+        if (nextSteps instanceof HTMLElement) {
+            nextSteps.hidden = order.status !== 'Pending';
         }
 
-        if (['Batal', 'Selesai'].includes(order.status)) {
+        if (order.status === 'Selesai') {
+            window.clearInterval(statusPoll);
+            if (completedUrl) {
+                window.setTimeout(() => window.location.assign(completedUrl), 2000);
+            }
+        } else if (order.status === 'Batal') {
             window.clearInterval(statusPoll);
         }
     };
@@ -545,7 +552,12 @@ document.querySelectorAll('[data-customer-order-status]').forEach((statusCard) =
         updateStatus().catch((error) => console.error(error));
     }, 8000);
 
-    if (['Batal', 'Selesai'].includes(statusLabel.textContent.trim())) {
+    if (statusLabel.textContent.trim() === 'Selesai') {
+        window.clearInterval(statusPoll);
+        if (completedUrl) {
+            window.setTimeout(() => window.location.assign(completedUrl), 2000);
+        }
+    } else if (statusLabel.textContent.trim() === 'Batal') {
         window.clearInterval(statusPoll);
     }
 });
